@@ -603,7 +603,8 @@ function renderNormalized(res, sent) {
   const conf = num(res.confidence);
   const badge = `<span class="badge ${badgeClass}">${esc(source)}${
     source === 'llm' && res.provider ? ` · ${esc(res.provider)}` : ''
-  }${conf !== null ? `<span class="badge-conf">${conf.toFixed(2)}</span>` : ''}</span>`;
+  }</span>`;
+  const confLine = conf !== null ? ` <span class="mono badge-conf">confidence ${conf.toFixed(2)}</span>` : '';
 
   const raw = [sent.psp, sent.raw_code, sent.raw_message].filter(Boolean).join(' · ');
   const policy = RETRY_POLICY_COPY[res.error_class] || RETRY_POLICY_DEFAULT;
@@ -612,7 +613,8 @@ function renderNormalized(res, sent) {
   $('norm-result').innerHTML = `
     <p class="kicker">Normalized to</p>
     <p class="norm-class">${esc(res.error_class ?? '—')}</p>
-    <p>${badge}</p>
+    <p>${badge}${confLine}</p>
+    ${source === 'fallback' ? '<p class="norm-reason">below the 0.60 confidence threshold, or no model available — the retry machine gets the safe default</p>' : ''}
     <p class="norm-raw">from ${esc(raw)}</p>
     ${res.reasoning ? `<p class="norm-reason">${esc(res.reasoning)}</p>` : ''}
     ${
