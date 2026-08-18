@@ -16,7 +16,10 @@ study) — and are gated by the tests and evals you can run yourself. The
 engineering discipline is the same one described in
 [nutri.](https://vryahn.com/work/nutri): conventions the agent must load,
 structural guardrails, and a machine — not a promise — as the definition of
-done.
+done. The guardrails caught what would otherwise have shipped: a rewrite that
+dropped every API path (found by post-deploy verification), a UI mislabeling
+valid issuers as unseen, and two wrong assumptions of the author's (a
+page-count rule, a DNS setup) that subagents refused to act on.
 
 **Live demo** https://orchestrator.vryahn.com · **Case study**
 https://vryahn.com/work/routing · **API** [`api/README.md`](api/README.md) ·
