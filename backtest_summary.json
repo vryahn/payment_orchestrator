@@ -1,0 +1,56 @@
+{
+  "test_days": "22-31",
+  "n_test_txns": 84011,
+  "actual_approval_rate": 0.6613,
+  "actual_fee_paid": 360017.0,
+  "headline_lift_pp": 5.89,
+  "by_cost_bias": [
+    {
+      "cost_bias": 0.0,
+      "unrouted": 0,
+      "expected_approval": 0.7202,
+      "lift_pp": 5.89,
+      "expected_fee": 410848.0,
+      "fee_delta": 50832.0,
+      "psp_counts": {
+        "psp-a": 31766,
+        "psp-b": 35641,
+        "psp-c": 16604
+      }
+    },
+    {
+      "cost_bias": 0.5,
+      "unrouted": 0,
+      "expected_approval": 0.7156,
+      "lift_pp": 5.43,
+      "expected_fee": 403233.0,
+      "fee_delta": 43216.0,
+      "psp_counts": {
+        "psp-a": 42745,
+        "psp-b": 19531,
+        "psp-c": 20406,
+        "psp-d": 1329
+      }
+    },
+    {
+      "cost_bias": 1.0,
+      "unrouted": 0,
+      "expected_approval": 0.6957,
+      "lift_pp": 3.44,
+      "expected_fee": 385282.0,
+      "fee_delta": 25265.0,
+      "psp_counts": {
+        "psp-a": 52124,
+        "psp-b": 9293,
+        "psp-c": 14969,
+        "psp-d": 7625
+      }
+    }
+  ],
+  "caveats": [
+    "Correlation != causation: historical routing was not randomized, so a segment's higher approval rate for a PSP may partly reflect which transactions were already sent there.",
+    "No capacity constraints modeled: this assumes every PSP could absorb 100% of reallocated volume at the same approval rate.",
+    "'Expected approval' is the TRAIN-period Wilson-LB rate applied to TEST volume, not a live A/B result.",
+    "Wilson-LB is conservative, so the expected number is understated for thick cells and deliberately pessimistic for thin ones."
+  ]
+}

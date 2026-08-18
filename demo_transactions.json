@@ -1,0 +1,43 @@
+[
+  {
+    "txn": {"amount": 250, "bin6": "596546", "funding": "debit", "gateway": "checkout", "attempt_number": 1},
+    "cost_bias": 0.0,
+    "why_interesting": "Plain first attempt. bin6 596546 resolves to Issuer-11, inside the top-volume issuer whitelist, but splitting that issuer four ways by amount band leaves every L0 cell under min_support, so all four PSPs fall back one level to L1 (channel x funding x issuer) -- the hierarchy degrades a dimension at a time instead of collapsing to a global average. At the default cost_bias=0 the tolerance is 0pp, so the route is simply the best Wilson-lower-bound approver in that segment. With no error history yet, the retry plan pre-computes the full failover ranking by expected_net rather than a single next PSP."
+  },
+  {
+    "txn": {"amount": 250, "bin6": "596546", "funding": "debit", "gateway": "checkout", "attempt_number": 1},
+    "cost_bias": 1.0,
+    "why_interesting": "Same segment as the previous transaction, cost_bias pushed to 1.0 -> tolerance = 10pp. The approval leader and the next PSP are within a fraction of a point of each other here, so the cheaper PSP survives the tolerance filter and wins on fee. This is the whole point of expressing the knob in percentage points of approval: an operator can see exactly how much approval they are trading, instead of tuning an abstract weight. Anywhere the approval gap exceeds 10pp, cost_bias cannot flip the route at all."
+  },
+  {
+    "txn": {"amount": 320, "bin6": "528772", "funding": "debit", "gateway": "recurring", "attempt_number": 2, "error_history": [{"psp": "psp-c", "error_class": "insufficient_funds"}]},
+    "cost_bias": 0.0,
+    "why_interesting": "Off-session retry after insufficient_funds. The retry state machine deliberately contradicts the router here: insufficient_funds is an account-funding problem, not a PSP-quality problem, so the next attempt goes back to the SAME psp that just declined, scheduled to the next billing window -- not to whichever PSP currently ranks first. Routing and retry are separate decisions and the reasoning trail says so."
+  },
+  {
+    "txn": {"amount": 150, "bin6": "543494", "funding": "credit", "gateway": "recurring", "attempt_number": 2, "error_history": [{"psp": "psp-a", "error_class": "bank_auth_required"}]},
+    "cost_bias": 0.0,
+    "why_interesting": "Off-session bank_auth_required: the channel-aware branch of the retry machine. There is no user in the loop on a scheduled attempt, so a blind retry cannot satisfy a step-up authentication no matter which PSP it lands on. The engine stops the scheduled retries and asks for the transaction to be rescheduled to a user-present channel with a customer notification. The same error class on checkout takes the opposite branch: retry once on the same PSP, with the 3DS/auth step prompted."
+  },
+  {
+    "txn": {"amount": 450, "bin6": "543494", "funding": "credit", "gateway": "checkout", "attempt_number": 2, "error_history": [{"psp": "psp-a", "error_class": "do_not_honor"}]},
+    "cost_bias": 0.0,
+    "why_interesting": "Two things at once. (1) Unknown error class: 'do_not_honor' is not one of the classes the state machine keys on, so it falls through to the generic-decline policy -- one failover to the next-best PSP, never a blind retry on the PSP that just declined -- and the reasoning line names the fallback explicitly instead of silently guessing. (2) Hierarchy fallback: the cheapest PSP has thin volume in this credit segment and drops to L1 (channel x funding x issuer) while the others are scored at L0, so the per-PSP support level is visible side by side in the output."
+  },
+  {
+    "txn": {"amount": 250, "bin6": "596546", "funding": "debit", "gateway": "checkout", "attempt_number": 3, "error_history": [{"psp": "psp-b", "error_class": "generic_decline"}, {"psp": "psp-a", "error_class": "fraud_risk"}]},
+    "cost_bias": 0.0,
+    "why_interesting": "Hard stop. fraud_risk anywhere in the attempt history kills the chain permanently, even though the last error alone would have allowed a failover and the attempt counter is nowhere near its cap. Marginal recovery on a fraud-flagged card is low and every extra attempt costs a fee, a scheme retry-rule violation risk, and customer goodwill. The router still reports what it would have done, so the stop is auditable rather than invisible."
+  },
+  {
+    "txn": {"amount": 90, "bin6": "442916", "funding": "prepaid", "gateway": "pos", "attempt_number": 1},
+    "cost_bias": 0.0,
+    "down": ["psp-b"],
+    "why_interesting": "Operator marks a PSP DOWN mid-incident. The candidate pool is rebuilt without it and the decision is re-scored over the survivors -- there is no static failover list to keep in sync, and the reasoning line records which PSP was pulled. Prepaid on a card-present terminal is also the thinnest corner of the data, so every remaining PSP climbs two levels to L2 (channel x funding), dropping the issuer and amount-band dimensions rather than scoring on a handful of observations."
+  },
+  {
+    "txn": {"amount": 183.57, "bin6": "999999", "funding": "credit", "gateway": "checkout", "attempt_number": 1},
+    "cost_bias": 0.0,
+    "why_interesting": "Two boundaries in one transaction. bin6 999999 was never seen in training, so no issuer resolves and the segment key uses issuer_bucket='OTHER'; the hierarchy then decides per PSP how far it has to climb to find enough support. The amount sits exactly on the Q2/Q3 band edge, so one extra cent moves every PSP into a different amount band and shifts the reported Wilson lower bounds -- a concrete reminder that a hard cutoff is a real discontinuity in the decision, which is why the band the engine used is printed with the decision."
+  }
+]

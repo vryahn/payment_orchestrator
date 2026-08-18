@@ -1,0 +1,46 @@
+{
+  "table_only": {
+    "n": 48,
+    "correct": 32,
+    "accuracy": 0.6667,
+    "by_source": {
+      "table": {
+        "n": 28,
+        "correct": 28,
+        "accuracy": 1.0
+      },
+      "fallback": {
+        "n": 20,
+        "correct": 4,
+        "accuracy": 0.2
+      }
+    },
+    "confusion": {
+      "generic_decline": {
+        "generic_decline": 8
+      },
+      "insufficient_funds": {
+        "insufficient_funds": 5,
+        "generic_decline": 4
+      },
+      "invalid_card_info": {
+        "invalid_card_info": 7,
+        "generic_decline": 3
+      },
+      "fraud_risk": {
+        "fraud_risk": 6,
+        "generic_decline": 3
+      },
+      "bank_auth_required": {
+        "bank_auth_required": 3,
+        "generic_decline": 3
+      },
+      "other": {
+        "other": 3,
+        "generic_decline": 3
+      }
+    }
+  },
+  "llm": null,
+  "note": "run with GEMINI_KEY set and --write-baseline"
+}

@@ -1,0 +1,11 @@
+# Offline / development only. Vercel installs requirements.txt, never this file:
+# the deployed engine is stdlib + fastapi, and everything below exists to build
+# the tables, run the backtest, serve MCP, or test locally.
+-r requirements.txt
+duckdb==1.4.5          # build_routing_tables.py, backtest.py
+numpy==2.0.2           # synth_attempts.py
+pandas==2.3.3          # synth_attempts.py, build_routing_tables.py
+pyarrow==21.0.0        # parquet I/O
+mcp==1.19.0            # mcp_server.py
+uvicorn==0.41.0        # local API server
+httpx==0.28.1          # fastapi.testclient, used by tests_ai.py

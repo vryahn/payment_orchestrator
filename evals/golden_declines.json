@@ -1,0 +1,57 @@
+[
+  {"psp": "psp-a", "raw_code": "05", "raw_message": "Do not honor", "expected_class": "generic_decline", "note": "table: the canonical no-reason-given refusal"},
+  {"psp": "psp-a", "raw_code": "51", "raw_message": null, "expected_class": "insufficient_funds", "note": "table: ISO 8583 insufficient funds"},
+  {"psp": "psp-a", "raw_code": "54", "raw_message": "Expired card", "expected_class": "invalid_card_info", "note": "table: credentials are dead, a retry cannot fix it"},
+  {"psp": "psp-a", "raw_code": "14", "raw_message": null, "expected_class": "invalid_card_info", "note": "table: invalid card number"},
+  {"psp": "psp-a", "raw_code": "59", "raw_message": null, "expected_class": "fraud_risk", "note": "table: suspected fraud, hard stop"},
+  {"psp": "psp-a", "raw_code": "61", "raw_message": null, "expected_class": "insufficient_funds", "note": "table: exceeds withdrawal amount limit -- a limit, not a bad card"},
+  {"psp": "psp-a", "raw_code": "65", "raw_message": null, "expected_class": "bank_auth_required", "note": "table: soft decline, SCA required"},
+  {"psp": "psp-a", "raw_code": "91", "raw_message": null, "expected_class": "other", "note": "table: issuer unavailable, a technical failure"},
+  {"psp": "psp-a", "raw_code": "43", "raw_message": null, "expected_class": "fraud_risk", "note": "table: stolen card"},
+
+  {"psp": "psp-b", "raw_code": "insufficient_funds", "raw_message": null, "expected_class": "insufficient_funds", "note": "table: Stripe-like decline_code"},
+  {"psp": "psp-b", "raw_code": "do_not_honor", "raw_message": null, "expected_class": "generic_decline", "note": "table: Stripe-like decline_code"},
+  {"psp": "psp-b", "raw_code": "lost_card", "raw_message": null, "expected_class": "fraud_risk", "note": "table: lost card is a theft signal, not a bad-credentials signal"},
+  {"psp": "psp-b", "raw_code": "stolen_card", "raw_message": null, "expected_class": "fraud_risk", "note": "table"},
+  {"psp": "psp-b", "raw_code": "expired_card", "raw_message": null, "expected_class": "invalid_card_info", "note": "table"},
+  {"psp": "psp-b", "raw_code": "incorrect_cvc", "raw_message": null, "expected_class": "invalid_card_info", "note": "table"},
+  {"psp": "psp-b", "raw_code": "authentication_required", "raw_message": null, "expected_class": "bank_auth_required", "note": "table"},
+  {"psp": "psp-b", "raw_code": "fraudulent", "raw_message": null, "expected_class": "fraud_risk", "note": "table"},
+  {"psp": "psp-b", "raw_code": "processing_error", "raw_message": null, "expected_class": "other", "note": "table: acquirer-side failure, not a card decision"},
+
+  {"psp": "psp-c", "raw_code": "Refused", "raw_message": null, "expected_class": "generic_decline", "note": "table: Adyen-like refusalReason"},
+  {"psp": "psp-c", "raw_code": "Not enough balance", "raw_message": null, "expected_class": "insufficient_funds", "note": "table"},
+  {"psp": "psp-c", "raw_code": "FRAUD-CANCELLED", "raw_message": null, "expected_class": "fraud_risk", "note": "table"},
+  {"psp": "psp-c", "raw_code": "Authentication required", "raw_message": null, "expected_class": "bank_auth_required", "note": "table"},
+  {"psp": "psp-c", "raw_code": "Expired Card", "raw_message": null, "expected_class": "invalid_card_info", "note": "table"},
+  {"psp": "psp-c", "raw_code": "Invalid Card Number", "raw_message": null, "expected_class": "invalid_card_info", "note": "table"},
+  {"psp": "psp-c", "raw_code": "Acquirer Error", "raw_message": null, "expected_class": "other", "note": "table"},
+  {"psp": "psp-c", "raw_code": "Blocked Card", "raw_message": null, "expected_class": "invalid_card_info", "note": "table: blocked by the issuer -- retrying is futile, the customer needs another card. NOT fraud_risk: a hard stop on the whole chain is the wrong consequence here"},
+
+  {"psp": "psp-d", "raw_code": null, "raw_message": "Insufficient funds", "expected_class": "insufficient_funds", "note": "table: one of the few pinned exact bank messages"},
+  {"psp": "psp-d", "raw_code": null, "raw_message": "Do not honor", "expected_class": "generic_decline", "note": "table: pinned exact message"},
+
+  {"psp": "psp-a", "raw_code": "N7", "raw_message": null, "expected_class": "invalid_card_info", "note": "OFF-TABLE: Visa CVV2 mismatch, alphanumeric so it never matches the numeric table"},
+  {"psp": "psp-a", "raw_code": "1A", "raw_message": null, "expected_class": "bank_auth_required", "note": "OFF-TABLE: Visa strong-customer-authentication soft decline"},
+  {"psp": "psp-a", "raw_code": "92", "raw_message": "Financial institution could not be found for routing", "expected_class": "other", "note": "OFF-TABLE: network routing failure, not a card decision"},
+
+  {"psp": "psp-b", "raw_code": "insufficent_funds", "raw_message": null, "expected_class": "insufficient_funds", "note": "OFF-TABLE: misspelled code from a PSP changelog typo -- the exact case a table cannot absorb"},
+  {"psp": "psp-b", "raw_code": "card_velocity_exceeded", "raw_message": null, "expected_class": "insufficient_funds", "note": "OFF-TABLE: a spend limit hit right now; the card is fine and a later retry recovers"},
+  {"psp": "psp-b", "raw_code": "invalid_cvc", "raw_message": null, "expected_class": "invalid_card_info", "note": "OFF-TABLE: near-miss of the table's incorrect_cvc"},
+  {"psp": "psp-b", "raw_code": "issuer_declined_step_up", "raw_message": null, "expected_class": "bank_auth_required", "note": "OFF-TABLE: unusual but unambiguous, the issuer wants authentication"},
+  {"psp": "psp-b", "raw_code": "service_not_allowed", "raw_message": null, "expected_class": "other", "note": "OFF-TABLE: transaction type not permitted, a configuration failure"},
+
+  {"psp": "psp-c", "raw_code": "Declined Non Generic", "raw_message": null, "expected_class": "generic_decline", "note": "OFF-TABLE: a refusal with no stated reason"},
+  {"psp": "psp-c", "raw_code": "Withdrawal count exceeded", "raw_message": null, "expected_class": "insufficient_funds", "note": "OFF-TABLE: too many withdrawals in the window -- a limit, recoverable on a later retry"},
+  {"psp": "psp-c", "raw_code": "Card Reported Lost", "raw_message": null, "expected_class": "fraud_risk", "note": "OFF-TABLE: theft signal, hard stop"},
+  {"psp": "psp-c", "raw_code": "Issuer Suspected Fraud", "raw_message": null, "expected_class": "fraud_risk", "note": "OFF-TABLE"},
+  {"psp": "psp-c", "raw_code": "Refused (contact issuer)", "raw_message": null, "expected_class": "generic_decline", "note": "OFF-TABLE + AMBIGUOUS: no reason given, so the safe default is correct"},
+
+  {"psp": "psp-d", "raw_code": null, "raw_message": "The transaction was declined because the available balance on the account is lower than the amount requested.", "expected_class": "insufficient_funds", "note": "OFF-TABLE: verbose bank prose, unambiguous meaning"},
+  {"psp": "psp-d", "raw_code": null, "raw_message": "Your card has passed its valid thru date; please provide updated card details.", "expected_class": "invalid_card_info", "note": "OFF-TABLE: expiry stated without the word 'expired'"},
+  {"psp": "psp-d", "raw_code": null, "raw_message": "Issuer requires cardholder verification via 3-D Secure before this payment can be approved.", "expected_class": "bank_auth_required", "note": "OFF-TABLE: step-up authentication described in prose"},
+  {"psp": "psp-d", "raw_code": null, "raw_message": "Authorization system is temporarily unavailable, please resubmit later.", "expected_class": "other", "note": "OFF-TABLE: infrastructure failure, not a decision about the card"},
+  {"psp": "psp-d", "raw_code": null, "raw_message": "Card has been reported stolen. Do not attempt further charges.", "expected_class": "fraud_risk", "note": "OFF-TABLE: theft signal in prose, hard stop"},
+  {"psp": "psp-d", "raw_code": null, "raw_message": "Transaction declined by issuer.", "expected_class": "generic_decline", "note": "OFF-TABLE + AMBIGUOUS: says nothing about why, so the safe default is the right answer"},
+  {"psp": "psp-d", "raw_code": null, "raw_message": "Declined.", "expected_class": "generic_decline", "note": "OFF-TABLE + AMBIGUOUS: the minimum possible information, safe default"}
+]

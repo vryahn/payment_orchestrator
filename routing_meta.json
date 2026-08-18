@@ -1,0 +1,139 @@
+{
+  "amount_band_edges": [
+    114.21,
+    183.57,
+    295.15
+  ],
+  "top_issuers": [
+    "Issuer-01",
+    "Issuer-02",
+    "Issuer-03",
+    "Issuer-04",
+    "Issuer-05",
+    "Issuer-06",
+    "Issuer-07",
+    "Issuer-08",
+    "Issuer-09",
+    "Issuer-10",
+    "Issuer-11",
+    "Issuer-12"
+  ],
+  "bin6_to_issuer": {
+    "520567": "Issuer-10",
+    "566451": "Issuer-07",
+    "499465": "Issuer-14",
+    "539263": "Issuer-14",
+    "472362": "Issuer-15",
+    "473328": "Issuer-05",
+    "492587": "Issuer-06",
+    "544471": "Issuer-14",
+    "595123": "Issuer-02",
+    "599220": "Issuer-13",
+    "474091": "Issuer-06",
+    "489137": "Issuer-04",
+    "557212": "Issuer-02",
+    "432137": "Issuer-07",
+    "432254": "Issuer-14",
+    "486602": "Issuer-01",
+    "487922": "Issuer-09",
+    "493343": "Issuer-05",
+    "553568": "Issuer-07",
+    "559367": "Issuer-08",
+    "425984": "Issuer-06",
+    "464242": "Issuer-13",
+    "543410": "Issuer-14",
+    "460302": "Issuer-15",
+    "513074": "Issuer-10",
+    "532862": "Issuer-13",
+    "543494": "Issuer-02",
+    "571133": "Issuer-12",
+    "578623": "Issuer-04",
+    "433045": "Issuer-04",
+    "500069": "Issuer-02",
+    "566534": "Issuer-07",
+    "456276": "Issuer-12",
+    "490091": "Issuer-03",
+    "494312": "Issuer-09",
+    "501120": "Issuer-09",
+    "581106": "Issuer-06",
+    "406938": "Issuer-11",
+    "442916": "Issuer-11",
+    "541032": "Issuer-09",
+    "571718": "Issuer-01",
+    "427950": "Issuer-08",
+    "433394": "Issuer-13",
+    "445447": "Issuer-03",
+    "512899": "Issuer-06",
+    "528772": "Issuer-03",
+    "556312": "Issuer-03",
+    "425256": "Issuer-12",
+    "430857": "Issuer-05",
+    "521438": "Issuer-15",
+    "527351": "Issuer-08",
+    "554790": "Issuer-01",
+    "565525": "Issuer-04",
+    "571015": "Issuer-10",
+    "509313": "Issuer-05",
+    "510715": "Issuer-10",
+    "513046": "Issuer-10",
+    "596546": "Issuer-11",
+    "513747": "Issuer-09",
+    "551616": "Issuer-04",
+    "579616": "Issuer-07"
+  },
+  "psp_fees": {
+    "psp-a": 0.029,
+    "psp-b": 0.031,
+    "psp-c": 0.03,
+    "psp-d": 0.027
+  },
+  "psp_volume_order": [
+    "psp-a",
+    "psp-b",
+    "psp-c",
+    "psp-d"
+  ],
+  "min_support_default": 200,
+  "hierarchy_levels": {
+    "0": [
+      "gateway_group",
+      "funding",
+      "issuer_bucket",
+      "amount_band",
+      "psp"
+    ],
+    "1": [
+      "gateway_group",
+      "funding",
+      "issuer_bucket",
+      "psp"
+    ],
+    "2": [
+      "gateway_group",
+      "funding",
+      "psp"
+    ],
+    "3": [
+      "gateway_group",
+      "psp"
+    ]
+  },
+  "gateway_groups": [
+    "checkout",
+    "pos",
+    "recurring"
+  ],
+  "funding_values": [
+    "credit",
+    "debit",
+    "prepaid"
+  ],
+  "error_classes": [
+    "bank_auth_required",
+    "fraud_risk",
+    "generic_decline",
+    "insufficient_funds",
+    "invalid_card_info",
+    "other"
+  ]
+}
