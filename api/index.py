@@ -18,6 +18,19 @@ import ops  # noqa: E402
 app = FastAPI(title="payment routing orchestrator", docs_url="/api/docs")
 
 
+# Vercel's rewrite replaces the request path with the destination, so the
+# function would only ever see "/api/index". vercel.json carries the real
+# sub-path in `__p`; put it back before the router looks at it.
+# ponytail: middleware over renaming this file to a [...path] dynamic route,
+# which would scatter the rename through the READMEs for the same result.
+@app.middleware("http")
+async def _restore_path(request, call_next):
+    sub = request.query_params.get("__p")
+    if sub is not None:
+        request.scope["path"] = "/api/" + sub
+    return await call_next(request)
+
+
 def _bad(e):
     return JSONResponse(status_code=400, content={"error": str(e)})
 
