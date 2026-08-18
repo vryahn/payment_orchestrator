@@ -128,11 +128,14 @@ default. The repo runs green with no API keys set.
 **Measured, not trusted — `evals/`.** 48 golden declines: ~60% table hits, ~40%
 deliberately off-table (misspellings, verbose bank text, unusual codes) plus a
 few genuinely ambiguous ones where `generic_decline` is the correct answer. The
-recorded baseline in `evals/baseline.json` is the table-only floor: 32/48 =
-**66.67%** overall, **100%** on the 28 table-route cases, **20%** on the 20 that
-fall through to the fallback with no key set. The runner reports accuracy by
-route and a per-class confusion table, asserts zero hallucinations, and fails
-the build if accuracy drops more than 2 pp below the baseline.
+`evals/baseline.json` records two baselines. Table-only (no keys): 32/48 =
+**66.67%**, i.e. 100% on the 28 table-route cases and the safe `generic_decline`
+default on the 20 that fall through. LLM (keys configured, run against the
+deployed API with `--remote`): **48/48 = 100%** — 28 table, 19 answered by
+`gemini-3.6-flash`, 1 by the low-confidence fallback where `generic_decline` was
+the expected answer. The runner reports accuracy by route and a per-class
+confusion table, asserts zero hallucinations, and fails the build if accuracy
+drops more than 2 pp below the matching baseline.
 
 **Out — `mcp_server.py`.** Six MCP tools — `route_transaction`,
 `explain_decision`, `simulate`, `segment_evidence`, `normalize_decline`,
@@ -151,9 +154,8 @@ interrogate every decision and change none of them. See [`MCP.md`](MCP.md).
   rate applied to TEST volume — not a live A/B result.
 - Tables pool all attempts while the backtest trains and replays on first
   attempts only; first-attempt-only production tables would be the next fix.
-- LLM baseline pending: the eval ran table-only until API keys are configured,
-  so the off-table 20% is the floor with the model disabled, not a measurement
-  of the model.
+- The LLM eval is 48 cases and one run; 100% on a golden set this small is a
+  gate against regressions, not a claim about the long tail in production.
 
 ## File map
 

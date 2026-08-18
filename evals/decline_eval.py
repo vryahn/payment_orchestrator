@@ -41,7 +41,22 @@ def current_mode():
     return "llm" if any(os.environ.get(k) for k in keys) else "table_only"
 
 
-def run(cases):
+def _remote_normalize(base_url):
+    """Call the deployed /api/normalize instead of the local function (keys stay on the server)."""
+    import urllib.request
+    from decline_normalizer import Normalized
+
+    def _call(psp, raw_code, raw_message):
+        body = json.dumps({"psp": psp, "raw_code": raw_code, "raw_message": raw_message}).encode()
+        req = urllib.request.Request(base_url.rstrip("/") + "/api/normalize", data=body,
+                                     headers={"content-type": "application/json"})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            d = json.load(r)
+        return Normalized(d["error_class"], d["confidence"], d["source"], d.get("provider"), d.get("reasoning", ""))
+    return _call
+
+
+def run(cases, normalize=normalize):
     rows, hallucinations = [], []
     for c in cases:
         got = normalize(c["psp"], c.get("raw_code"), c.get("raw_message"))
@@ -115,13 +130,19 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--write-baseline", action="store_true")
     ap.add_argument("--json", action="store_true", help="print the summary as JSON too")
+    ap.add_argument("--remote", metavar="BASE_URL",
+                    help="evaluate the deployed API (e.g. https://orchestrator.vryahn.com); mode is 'llm'")
     args = ap.parse_args()
 
     with open(GOLDEN) as f:
         cases = json.load(f)
 
-    mode = current_mode()
-    rows, hallucinations = run(cases)
+    if args.remote:
+        mode = "llm"
+        rows, hallucinations = run(cases, _remote_normalize(args.remote))
+    else:
+        mode = current_mode()
+        rows, hallucinations = run(cases)
     summary = summarize(rows)
     print_report(mode, rows, summary, hallucinations)
 
