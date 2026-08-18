@@ -9,6 +9,15 @@ keyed on the decline's error class decides what happens next: same PSP later,
 failover now, a different channel, or stop. The routing decision itself is
 deterministic and auditable; no language model runs inside it.
 
+Built and shipped inside Claude Code: the engine, the AI edge layer, the eval
+harness, the web UI, the API and this README were produced in agentic sessions
+— one orchestrating session delegating to subagents (backend, UI, publish, case
+study) — and are gated by the tests and evals you can run yourself. The
+engineering discipline is the same one described in
+[nutri.](https://vryahn.com/work/nutri): conventions the agent must load,
+structural guardrails, and a machine — not a promise — as the definition of
+done.
+
 **Live demo** https://orchestrator.vryahn.com · **Case study**
 https://vryahn.com/work/routing · **API** [`api/README.md`](api/README.md) ·
 **MCP** [`MCP.md`](MCP.md)
