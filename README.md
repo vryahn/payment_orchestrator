@@ -9,6 +9,10 @@ keyed on the decline's error class decides what happens next: same PSP later,
 failover now, a different channel, or stop. The routing decision itself is
 deterministic and auditable; no language model runs inside it.
 
+Built by Bryan Rodríguez Abarca — a payments product manager who decides where
+a model earns its place, and where it doesn't. More at
+https://vryahn.com/work/routing
+
 Built and shipped inside Claude Code: the engine, the AI edge layer, the eval
 harness, the web UI, the API and this README were produced in agentic sessions
 — one orchestrating session delegating to subagents (backend, UI, publish, case
