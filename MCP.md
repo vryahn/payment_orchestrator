@@ -1,16 +1,19 @@
 # MCP server — the agent edge
 
-`mcp_server.py` exposes the routing engine over MCP (stdio) so an analyst can
-operate it in English while the decision itself stays deterministic. The agent
-can ask *what would route where*, *on what evidence*, and *what if the cost knob
-moved* — it cannot change how any of those are computed. Every tool is a thin
-wrapper over `ops.py`, the same module the HTTP API calls.
+`mcp_server.py` exposes the routing engine over MCP so an analyst can operate it
+in English while the decision itself stays deterministic. The agent can ask
+*what would route where*, *on what evidence*, and *what if the cost knob moved*
+— it cannot change how any of those are computed. Every tool is a thin wrapper
+over `ops.py`, the same module the HTTP API calls.
 
-## Register it
+The same six tools are reachable two ways: **stdio**, running this repo locally,
+or **Streamable HTTP** at `https://orchestrator.vryahn.com/mcp`, served by the
+deployed API and gated by a bearer token.
 
-The server needs the offline dependencies (`mcp` itself lives in
-`requirements-dev.txt`), so point the config at this repo's virtualenv rather
-than a system Python.
+## Local (stdio)
+
+Point the config at this repo's virtualenv rather than a system Python — the
+server needs the offline dependencies to run the live backtest.
 
 **Claude Desktop** — `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -40,6 +43,28 @@ Setup, once:
 .venv/bin/pip install -r requirements-dev.txt
 .venv/bin/python synth_attempts.py && .venv/bin/python build_routing_tables.py
 ```
+
+## Remote (Streamable HTTP)
+
+`api/index.py` mounts the same `mcp` object on the deployed API, so the hosted
+tools answer from the same `ops.py` as the web demo — nothing to install:
+
+```bash
+claude mcp add --transport http payment-orchestrator \
+  https://orchestrator.vryahn.com/mcp \
+  --header "Authorization: Bearer <token>"
+```
+
+The token is private and deliberately not published with the demo: the browser
+UI is open to anyone, the agent edge is not — an unauthenticated caller could
+replay `backtest_summary(live=True)` on someone else's compute all day. It lives
+in the `MCP_TOKEN` environment variable of the Vercel project; ask for it if you
+need one. Without that variable the endpoint answers `503 MCP disabled`, with a
+wrong or missing bearer `401` — the rest of the API stays open.
+
+`backtest_summary(live=True)` is the one tool that behaves differently here: the
+deployment ships without `attempts.parquet` or the offline dependencies, so it
+errors and the committed summary (`live=False`, the default) is what answers.
 
 ## Tools
 

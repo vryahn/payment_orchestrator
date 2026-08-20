@@ -1,1 +1,2 @@
 fastapi==0.121.2
+mcp==1.19.0            # api/index.py serves /mcp over Streamable HTTP
