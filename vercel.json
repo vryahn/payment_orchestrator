@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/mcp", "destination": "/api/index?__p=mcp" },
+    { "source": "/mcp", "destination": "/api/mcp" },
     { "source": "/api/(.*)", "destination": "/api/index?__p=$1" }
   ]
 }
