@@ -85,6 +85,16 @@ def main():
         lowconf = normalize("psp-d", None, "other unmapped bank prose")
         check("low-confidence LLM answer is discarded",
               lowconf.error_class == "generic_decline" and lowconf.source == "fallback")
+
+        # the per-instance rate cap trips into the deterministic fallback
+        dn._CACHE.clear()
+        dn._llm_window_start = dn.time.monotonic()
+        dn._llm_window_calls = dn.LLM_MAX_PER_WINDOW
+        capped = normalize("psp-d", None, "yet another unmapped bank prose")
+        check("LLM rate cap -> fallback, never an upstream call",
+              capped.error_class == "generic_decline" and capped.source == "fallback"
+              and "rate cap" in capped.reasoning)
+        dn._llm_window_calls = 0
     finally:
         os.environ.pop("GEMINI_KEY", None)
         for k, v in saved.items():

@@ -29,6 +29,7 @@ bounded classification question whose entire output space is six strings.
 import argparse
 import json
 import os
+import time
 import urllib.error
 import urllib.request
 from dataclasses import asdict, dataclass
@@ -151,6 +152,26 @@ SYSTEM_PROMPT = (
 
 _CACHE = {}
 
+# ponytail: per-instance cap on LLM calls — the public /api/normalize endpoint has
+# no auth, so unique made-up messages could otherwise burn quota one call each.
+# In-memory, so it resets per lambda instance; a distributed limiter needs a store
+# this project doesn't have. Add one only if abuse actually shows up in the logs.
+LLM_MAX_PER_WINDOW = 30
+LLM_WINDOW_SECONDS = 60.0
+_llm_window_start = 0.0
+_llm_window_calls = 0
+
+
+def _llm_budget_ok() -> bool:
+    global _llm_window_start, _llm_window_calls
+    now = time.monotonic()
+    if now - _llm_window_start >= LLM_WINDOW_SECONDS:
+        _llm_window_start, _llm_window_calls = now, 0
+    if _llm_window_calls >= LLM_MAX_PER_WINDOW:
+        return False
+    _llm_window_calls += 1
+    return True
+
 
 @dataclass
 class Normalized:
@@ -251,6 +272,9 @@ def _mistral(key, prompt):
 
 
 def _classify_with_llm(psp, dialect, raw_code, raw_message) -> Normalized:
+    if not _llm_budget_ok():
+        return _fallback(f"LLM rate cap reached ({LLM_MAX_PER_WINDOW}/min per "
+                         "instance) -> safe default")
     gemini_key = _env("GEMINI_KEY", "VITE_GEMINI_KEY")
     mistral_key = _env("MISTRAL_KEY", "VITE_MISTRAL_KEY")
     if not gemini_key and not mistral_key:
