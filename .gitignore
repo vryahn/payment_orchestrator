@@ -4,3 +4,5 @@ __pycache__/
 .vercel/
 .env*
 .mcp_token
+ledger.db
+outbox_sink.jsonl

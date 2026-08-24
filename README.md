@@ -158,6 +158,34 @@ drops more than 2 pp below the matching baseline.
 `backtest_summary` — let an agent operate the engine in English. The agent can
 interrogate every decision and change none of them. See [`MCP.md`](MCP.md).
 
+## Durable outbox
+
+`ledger.py` records a routing decision and its downstream event as one atomic
+SQLite transaction (`attempts` + `outbox`, stdlib `sqlite3`), then `drain()`
+publishes un-published events at-least-once. Read `ledger.py`'s and
+`drain()`'s docstrings for the invariants; `tests_ledger.py` proves them
+(atomicity under a forced failure, idempotent replay, crash-mid-drain, and
+durability across a reconnect).
+
+This does not run in the deployed demo -- Vercel's filesystem is read-only,
+and `api/index.py` never imports `ledger` or `worker`. It runs in the repo,
+the container, and the tests.
+
+```bash
+.venv/bin/python tests_ledger.py           # ALL TESTS PASSED
+LEDGER_DB=/tmp/demo.db .venv/bin/python -c "
+import ledger
+ledger.record_decision({'amount': 250, 'gateway': 'checkout'}, {'route_psp': 'psp-a'}, 'demo-1')
+"
+LEDGER_DB=/tmp/demo.db .venv/bin/python worker.py   # drains the outbox to outbox_sink.jsonl, loops
+```
+
+```bash
+docker build -t orchestrator .
+docker run --rm orchestrator                                    # API, uvicorn on :8000
+docker run --rm -e LEDGER_DB=/data/ledger.db orchestrator python worker.py  # worker, same image
+```
+
 ## Limitations
 
 - Data is synthetic. The structure is designed to make routing decisions
@@ -190,6 +218,10 @@ interrogate every decision and change none of them. See [`MCP.md`](MCP.md).
 | `backtest.py` | TRAIN days 1–21 / TEST days 22–31 replay at `cost_bias` 0 / 0.5 / 1.0; `--json` rewrites `backtest_summary.json` |
 | `evals/` | 48 golden declines, the scoring runner, and the recorded baseline |
 | `tests.py` / `tests_ai.py` | assert-based checks: the engine, then the AI edges and the HTTP contract |
+| `ledger.py` | transactional outbox: `record_decision`, `drain` (stdlib `sqlite3`, gitignored `ledger.db`, not imported by `api/index.py`) |
+| `worker.py` | drains the outbox in a loop, publishes to a JSONL sink deduplicated by event id |
+| `tests_ledger.py` | assert-based checks for the outbox: atomicity, idempotency, crash-mid-drain, durability |
+| `Dockerfile` / `.dockerignore` | single-stage `python:3.12-slim` image; default CMD runs the API, override it (`python worker.py`) to run the drain worker |
 
 ---
 
