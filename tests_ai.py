@@ -156,6 +156,52 @@ def main():
           client.post("/api/decide", json={"gateway": "checkout"}).status_code == 400
           and "error" in client.post("/api/decide", json={"gateway": "checkout"}).json())
 
+    # 4b. A /api/cases item posts straight back, unedited. The loop above still
+    # reshapes by hand because that is what a caller USED to have to do; this
+    # asserts they no longer have to.
+    raw_case = cases[0]
+    round_trip = client.post("/api/decide", json=raw_case)
+    flat = dict(raw_case["txn"]); flat["cost_bias"] = raw_case.get("cost_bias", 0)
+    check("POST /api/decide accepts a /api/cases item unmodified",
+          round_trip.status_code == 200
+          and round_trip.json()["route_psp"] == client.post("/api/decide", json=flat).json()["route_psp"])
+    check("POST /api/simulate accepts a /api/cases item unmodified",
+          client.post("/api/simulate", json=raw_case).status_code == 200)
+    check("a top-level key beats the same key nested under txn",
+          client.post("/api/decide", json={"txn": {"amount": 250, "gateway": "checkout"},
+                                           "gateway": "pos"}).json()["reasoning"]
+          != client.post("/api/decide", json={"txn": {"amount": 250, "gateway": "checkout"}}
+                         ).json()["reasoning"])
+    check("a txn that is not an object is left alone rather than crashing",
+          client.post("/api/decide", json={"txn": "nonsense", "amount": 250,
+                                           "gateway": "checkout"}).status_code == 200)
+
+    # 4c. The hand-written requestBody schemas exist because the handlers take a
+    # bare dict (see api/index.py). Hand-written means they can drift, so pin them
+    # to the fields _txn_args actually reads.
+    import inspect
+    import re as _re
+
+    from api.index import _TXN_FIELDS, _txn_args
+
+    spec = client.get("/openapi.json").json()
+    reads = set(_re.findall(r'body\.get\("([a-z_0-9]+)"', inspect.getsource(_txn_args)))
+    check("the documented txn fields are exactly the ones _txn_args reads",
+          reads - {"txn"} == set(_TXN_FIELDS))
+
+    for path in ("/api/decide", "/api/simulate"):
+        props = spec["paths"][path]["post"]["requestBody"]["content"]["application/json"]["schema"]["properties"]
+        check(f"{path} documents its real fields, not an empty object",
+              set(_TXN_FIELDS) <= set(props) and "txn" in props)
+        check(f"{path} documents the 400 it actually returns",
+              "error" in spec["paths"][path]["post"]["responses"]["400"]["content"]
+              ["application/json"]["schema"]["properties"])
+
+    norm_props = (spec["paths"]["/api/normalize"]["post"]["requestBody"]["content"]
+                  ["application/json"]["schema"]["properties"])
+    check("/api/normalize documents psp/raw_code/raw_message",
+          {"psp", "raw_code", "raw_message"} == set(norm_props))
+
     # 5. MCP tools are importable and return well-formed payloads (no server needed)
     import mcp_server as srv
     check("MCP route_transaction returns a decision",

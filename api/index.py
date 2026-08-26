@@ -82,7 +82,55 @@ def _bad(e):
     return JSONResponse(status_code=400, content={"error": str(e)})
 
 
+# The handlers keep taking a bare dict so ops.py stays the only validator -- a
+# pydantic model here would move "amount is required" into a second authority and
+# turn it into a 422, contradicting this module's whole premise. The cost is that
+# FastAPI infers an empty `{additionalProperties: true}` body schema, leaving the
+# spec useless for generating a client, so the schema is declared by hand below.
+# The drift that invites is guarded mechanically: a test in tests_ai.py asserts
+# these keys are exactly the ones _txn_args reads out of the body.
+_TXN_FIELDS = {
+    "amount": {"type": "number", "description": "Minor-unit-agnostic amount. Required."},
+    "bin6": {"type": "string", "description": "First 6 digits of the PAN; resolves the issuer."},
+    "funding": {"type": "string", "description": "See /api/meta -> funding."},
+    "gateway": {"type": "string", "description": "See /api/meta -> gateways. Required."},
+    "attempt_number": {"type": "integer", "default": 1},
+    "cost_bias": {"type": "number", "default": 0,
+                  "description": "0 = route on approval alone; 1 = tolerate 10pp of approval to save fee."},
+    "psps_down": {"type": "array", "items": {"type": "string"},
+                  "description": "PSPs to exclude from this decision."},
+    "error_history": {"type": "array", "description": "Prior failures on this transaction.",
+                      "items": {"type": "object",
+                                "properties": {"psp": {"type": "string"},
+                                               "error_class": {"type": "string"}}}},
+}
+
+_ERROR_SCHEMA = {"type": "object", "properties": {"error": {"type": "string"}}}
+_BAD_RESPONSE = {400: {"description": "Validation failed in ops.py",
+                       "content": {"application/json": {"schema": _ERROR_SCHEMA}}}}
+
+
+def _body_spec(fields: dict, required: list, nested_txn: bool) -> dict:
+    """An explicit requestBody schema for a handler that takes a bare dict."""
+    props = dict(fields)
+    if nested_txn:
+        props["txn"] = {"type": "object", "properties": dict(fields),
+                        "description": "The nested form /api/cases returns; posted straight back, "
+                                       "it is flattened. Top-level keys win on conflict."}
+    schema = {"type": "object", "properties": props, "additionalProperties": True}
+    if not nested_txn:
+        schema["required"] = required
+    return {"content": {"application/json": {"schema": schema}}, "required": True}
+
+
 def _txn_args(body: dict) -> dict:
+    # /api/cases hands back {txn: {...}, cost_bias, why_interesting}, which is what
+    # a caller copies straight into /api/decide -- and until this flattened it, that
+    # obvious first move answered "amount is required". The web UI reads the nested
+    # shape (public/app.js), so /api/cases keeps it and the input side gives way.
+    txn = body.get("txn")
+    if isinstance(txn, dict):
+        body = {**txn, **{k: v for k, v in body.items() if k != "txn"}}
     return {
         "amount": body.get("amount"),
         "bin6": body.get("bin6"),
@@ -105,7 +153,8 @@ def get_meta():
     return ops.meta()
 
 
-@app.post("/api/decide")
+@app.post("/api/decide", responses=_BAD_RESPONSE,
+          openapi_extra={"requestBody": _body_spec(_TXN_FIELDS, ["amount", "gateway"], True)})
 def post_decide(body: dict):
     try:
         return ops.route_transaction(**_txn_args(body))
@@ -113,7 +162,8 @@ def post_decide(body: dict):
         return _bad(e)
 
 
-@app.post("/api/simulate")
+@app.post("/api/simulate", responses=_BAD_RESPONSE,
+          openapi_extra={"requestBody": _body_spec(_TXN_FIELDS, ["amount", "gateway"], True)})
 def post_simulate(body: dict):
     try:
         return ops.simulate(**_txn_args(body))
@@ -121,7 +171,10 @@ def post_simulate(body: dict):
         return _bad(e)
 
 
-@app.post("/api/evidence")
+@app.post("/api/evidence", responses=_BAD_RESPONSE,
+          openapi_extra={"requestBody": _body_spec(
+              {k: _TXN_FIELDS[k] for k in ("amount", "bin6", "funding", "gateway")},
+              ["amount", "gateway"], False)})
 def post_evidence(body: dict):
     try:
         return ops.segment_evidence(amount=body.get("amount"), bin6=body.get("bin6"),
@@ -130,7 +183,12 @@ def post_evidence(body: dict):
         return _bad(e)
 
 
-@app.post("/api/normalize")
+@app.post("/api/normalize", responses=_BAD_RESPONSE,
+          openapi_extra={"requestBody": _body_spec(
+              {"psp": {"type": "string", "description": "See /api/meta -> psps. Required."},
+               "raw_code": {"type": "string", "description": "Raw decline code from the PSP."},
+               "raw_message": {"type": "string", "description": "Raw decline message, if any."}},
+              ["psp"], False)})
 def post_normalize(body: dict):
     try:
         out = ops.normalize_decline(psp=body.get("psp"), raw_code=body.get("raw_code"),
