@@ -98,7 +98,7 @@ code, .mono { font-family: var(--font-mono); font-size: .92em; font-variant-liga
 }
 .topbar nav a:hover { color: var(--color-terracotta); }
 
-.langs { display: flex; border: var(--hairline); border-radius: 999px; overflow: hidden; }
+.langs { display: flex; border: var(--hairline); border-radius: 999px; overflow: hidden; margin-left: 8px; }
 .langs button {
   background: none; border: 0; font-family: var(--font-mono); font-size: .8rem; line-height: 1;
   text-transform: uppercase; letter-spacing: .08em; padding: 4px 9px; cursor: pointer; color: var(--color-muted);
@@ -110,6 +110,7 @@ code, .mono { font-family: var(--font-mono); font-size: .92em; font-variant-liga
   .topbar-inner { padding: var(--s2) var(--s3); gap: var(--s3); }
   .topbar nav { flex-wrap: nowrap; gap: 12px; }
   .topbar nav a { font-size: .7rem; letter-spacing: .05em; white-space: nowrap; }
+  .langs { margin-left: 4px; }
   .langs button { font-size: .7rem; letter-spacing: .05em; padding: 2px 8px; }
 }
 
