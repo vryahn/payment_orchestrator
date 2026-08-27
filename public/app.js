@@ -3,6 +3,54 @@
 
 const $ = (id) => document.getElementById(id);
 
+/* ---------------- language toggle ---------------- */
+
+let lang = 'en';
+
+function initLangToggle() {
+  const nodes = [...document.querySelectorAll('[data-es], [data-es-html]')];
+  nodes.forEach((n) => {
+    if (n.dataset.esHtml !== undefined) n.dataset.enHtml = n.innerHTML;
+    else n.dataset.en = n.textContent;
+  });
+  const btnEN = $('lang-en');
+  const btnES = $('lang-es');
+  function setLang(l) {
+    nodes.forEach((n) => {
+      if (n.dataset.esHtml !== undefined) n.innerHTML = l === 'es' ? n.dataset.esHtml : n.dataset.enHtml;
+      else n.textContent = l === 'es' ? n.dataset.es : n.dataset.en;
+    });
+    btnEN.classList.toggle('on', l === 'en');
+    btnES.classList.toggle('on', l === 'es');
+    btnEN.setAttribute('aria-pressed', String(l === 'en'));
+    btnES.setAttribute('aria-pressed', String(l === 'es'));
+    document.documentElement.lang = l;
+    try { localStorage.setItem('orch-lang', l); } catch {}
+    lang = l;
+    window.currentLang = l;
+    onLangChange(l);
+  }
+  window.setOrchLang = setLang;
+  btnEN.addEventListener('click', () => setLang('en'));
+  btnES.addEventListener('click', () => setLang('es'));
+  let saved = 'en';
+  try { saved = localStorage.getItem('orch-lang') || 'en'; } catch {}
+  setLang(saved);
+}
+
+let engineDown = false;
+
+// Re-render whatever is already on screen from cached API responses — never re-fetch.
+function onLangChange() {
+  if (engineDown) $('decision').innerHTML = `<p class="hint on-dark">${esc(t('The engine is not answering.'))}</p>`;
+  renderLift();
+  if (cases.length) renderCases();
+  if (meta) reflectDerivedUI();
+  if (lastDecision) renderDecision(lastDecision);
+  if (lastSimulate) renderSimulate(lastSimulate);
+  if (lastNormalizeResult) renderNormalized(lastNormalizeResult, lastNormalizeSent);
+}
+
 /* ---------------- helpers ---------------- */
 
 const esc = (s) =>
@@ -91,6 +139,85 @@ const RETRY_POLICY_COPY = {
 const RETRY_POLICY_DEFAULT =
   'Unrecognized classes degrade to the generic failover policy — one move to the next-best provider — and the reasoning trail names the fallback explicitly instead of silently guessing.';
 
+const CASE_TITLES_ES = [
+  'Un primer intento simple, puntuado sobre la evidencia más fina que realmente se sostiene',
+  'La misma transacción con la perilla de comisión totalmente abierta — gana el proveedor más barato',
+  'Fondos bajos fuera de sesión: el reintento vuelve al mismo proveedor, más tarde',
+  'Se necesita autenticación y no hay nadie: se mueve a un canal con usuario presente',
+  'Una clase de error que la máquina no conoce, además sobre evidencia escasa',
+  'Fraude marcado antes en la cadena: una parada permanente',
+  'Un proveedor marcado como caído a media incidencia, en el rincón más escaso de los datos',
+  'Un emisor nunca visto en entrenamiento, justo en el borde de una banda de monto',
+];
+
+const RETRY_POLICY_COPY_ES = {
+  insufficient_funds:
+    'El fondeo es un problema de cuenta, no de proveedor. Fuera de sesión, el reintento vuelve al mismo proveedor en la siguiente ventana de cobro, que tiene la recuperación marginal más alta de cualquier razón de rechazo. Con el cliente presente, se permite primero un failover inmediato.',
+  bank_auth_required:
+    'Fuera de sesión no hay usuario para completar un paso reforzado, así que un reintento ciego no puede tener éxito en ningún proveedor: los reintentos programados se detienen y la transacción se reprograma a un canal con usuario presente con una notificación. En checkout o POS se reintenta una vez con el mismo proveedor, solicitando el paso de autenticación.',
+  fraud_risk:
+    'Parada dura. La recuperación marginal en una tarjeta marcada por fraude es baja y cada intento extra cuesta comisión, riesgo de regla de reintento del esquema y buena voluntad del cliente. Un fraud_risk en cualquier punto del historial de intentos mata la cadena, no solo como último error.',
+  invalid_card_info:
+    'Parar, y pedirle al cliente una tarjeta nueva. Reintentar datos de tarjeta incorrectos en otro proveedor no cambia nada sobre los datos.',
+  generic_decline:
+    'Un failover inmediato al siguiente mejor proveedor por neto esperado — nunca un reintento ciego en el proveedor que acaba de rechazar. Un segundo rechazo genérico consecutivo detiene la cadena.',
+  other:
+    'Un failover inmediato al siguiente mejor proveedor por neto esperado. Un segundo rechazo consecutivo de esta familia detiene la cadena.',
+};
+const RETRY_POLICY_DEFAULT_ES =
+  'Las clases no reconocidas degradan a la política de failover genérica — un movimiento al siguiente mejor proveedor — y el rastro de razonamiento nombra el fallback explícitamente en vez de adivinar en silencio.';
+
+// Microcopy used inside dynamically rendered HTML. Keys are the English string.
+const I18N_ES = {
+  'Could not load engine metadata: ': 'No se pudo cargar la metadata del motor: ',
+  'The engine is not answering.': 'El motor no está respondiendo.',
+  'Curated scenarios are unavailable; the controls below still work.':
+    'Los escenarios seleccionados no están disponibles; los controles de abajo siguen funcionando.',
+  'pp approval': 'pp aprobación',
+  'out-of-sample replay': 'repetición fuera de muestra',
+  'Enter an amount greater than zero to re-decide.': 'Ingresa un monto mayor a cero para redecidir.',
+  'earlier in this chain: ': 'antes en esta cadena: ',
+  'issuer not seen in training': 'emisor no visto en entrenamiento',
+  'attempt ': 'intento ',
+  'bias ': 'sesgo ',
+  ' down': ' caído(s)',
+  ' (unrecognized)': ' (no reconocido)',
+  'Route to': 'Enrutar a',
+  'static default — insufficient data': 'valor por defecto estático — datos insuficientes',
+  'Retry plan': 'Plan de reintento',
+  'Stop.': 'Detener.',
+  'If it fails': 'Si falla',
+  retry: 'reintentar',
+  'No retry.': 'Sin reintento.',
+  'Reasoning trail': 'Rastro de razonamiento',
+  observed: 'observado',
+  fee: 'comisión',
+  level: 'nivel',
+  'thin data': 'datos escasos',
+  excluded: 'excluido',
+  'Could not run the what-if sweep: ': 'No se pudo correr el barrido qué-pasaría-si: ',
+  'without ': 'sin ',
+  'all up': 'todos activos',
+  'Could not load the curated declines: ': 'No se pudieron cargar los rechazos seleccionados: ',
+  'Pick a curated decline, or type a code or message of your own.':
+    'Elige un rechazo seleccionado, o escribe tu propio código o mensaje.',
+  'Could not normalize that decline: ': 'No se pudo normalizar ese rechazo: ',
+  'Could not decide this transaction: ': 'No se pudo decidir esta transacción: ',
+  'No decision — see the message below.': 'Sin decisión — ver el mensaje abajo.',
+  'Normalized to': 'Normalizado a',
+  table: 'tabla',
+  fallback: 'respaldo',
+  'confidence ': 'confianza ',
+  'below the 0.60 confidence threshold, or no model available — the retry machine gets the safe default':
+    'bajo el umbral de confianza de 0.60, o no hay modelo disponible — la máquina de reintentos recibe el valor seguro por defecto',
+  'from ': 'de ',
+  'closed vocabulary: ': 'vocabulario cerrado: ',
+  'What the retry machine does with it': 'Qué hace la máquina de reintentos con esto',
+};
+
+// Translate a UI-owned copy string; data from the API (raw codes, PSP names, etc.) passes through untouched.
+const t = (s) => (lang === 'es' ? I18N_ES[s] ?? s : s);
+
 /* ---------------- state ---------------- */
 
 const state = {
@@ -109,6 +236,11 @@ let cases = [];
 let activeCase = -1;
 let decideSeq = 0;
 let simulateSeq = 0;
+let lastDecision = null;
+let lastSimulate = null;
+let lastNormalizeResult = null;
+let lastNormalizeSent = null;
+let lastLiftPp; // undefined = not loaded yet, null = loaded but no headline figure
 
 const payload = () => ({
   amount: state.amount,
@@ -126,6 +258,7 @@ const payload = () => ({
 boot();
 
 async function boot() {
+  initLangToggle();
   wireStaticHandlers();
 
   const [metaRes, casesRes] = await Promise.allSettled([
@@ -134,8 +267,9 @@ async function boot() {
   ]);
 
   if (metaRes.status !== 'fulfilled') {
-    showError($('decide-error'), `Could not load engine metadata: ${metaRes.reason.message}`);
-    $('decision').innerHTML = '<p class="hint on-dark">The engine is not answering.</p>';
+    engineDown = true;
+    showError($('decide-error'), `${t('Could not load engine metadata: ')}${metaRes.reason.message}`);
+    $('decision').innerHTML = `<p class="hint on-dark">${esc(t('The engine is not answering.'))}</p>`;
     $('decision').setAttribute('aria-busy', 'false');
     return;
   }
@@ -147,7 +281,7 @@ async function boot() {
     renderCases();
     loadCase(0);
   } else {
-    $('cases').innerHTML = '<p class="hint">Curated scenarios are unavailable; the controls below still work.</p>';
+    $('cases').innerHTML = `<p class="hint">${esc(t('Curated scenarios are unavailable; the controls below still work.'))}</p>`;
     syncFormFromState();
     runDecide();
     runSimulate();
@@ -160,15 +294,20 @@ async function boot() {
 async function loadBacktest() {
   try {
     const bt = await getJSON('/api/backtest');
-    const lift = num(bt.headline_lift_pp);
-    if (lift !== null) {
-      const sign = lift > 0 ? '+' : '';
-      $('stat-lift').textContent = `${sign}${lift.toFixed(1)} pp approval`;
-    } else {
-      $('stat-lift').textContent = 'out-of-sample replay';
-    }
+    lastLiftPp = num(bt.headline_lift_pp);
   } catch {
-    $('stat-lift').textContent = 'out-of-sample replay';
+    lastLiftPp = null;
+  }
+  renderLift();
+}
+
+function renderLift() {
+  if (lastLiftPp === undefined) return;
+  if (lastLiftPp !== null) {
+    const sign = lastLiftPp > 0 ? '+' : '';
+    $('stat-lift').textContent = `${sign}${lastLiftPp.toFixed(1)} ${t('pp approval')}`;
+  } else {
+    $('stat-lift').textContent = t('out-of-sample replay');
   }
 }
 
@@ -214,7 +353,7 @@ function labelBinFromSegment(si) {
   const opt = $('bin6').selectedOptions[0];
   if (!opt || opt.value !== state.bin6) return;
   if (si.issuer) opt.textContent = `${state.bin6} — ${si.issuer}`;
-  else if (si.issuer_bucket === 'OTHER') opt.textContent = `${state.bin6} — issuer not seen in training`;
+  else if (si.issuer_bucket === 'OTHER') opt.textContent = `${state.bin6} — ${t('issuer not seen in training')}`;
 }
 
 function onControlInput() {
@@ -251,7 +390,7 @@ function onControlInput() {
   // Don't decide on an amount the engine would reject: say so instead of
   // showing a stale decision next to a field the reader just changed.
   if (!amountOk) {
-    showError($('decide-error'), 'Enter an amount greater than zero to re-decide.');
+    showError($('decide-error'), t('Enter an amount greater than zero to re-decide.'));
     return;
   }
   scheduleDecide();
@@ -270,7 +409,7 @@ function reflectDerivedUI() {
   if (multi && earlier.length) {
     el.hidden = false;
     el.textContent =
-      'earlier in this chain: ' +
+      t('earlier in this chain: ') +
       earlier.map((e) => `${e.psp} ${e.error_class}`).join(' · ');
   } else {
     el.hidden = true;
@@ -295,7 +434,7 @@ function syncFormFromState() {
       // A class the engine does not key on (e.g. do_not_honor) — keep it visible.
       const opt = document.createElement('option');
       opt.value = last.error_class;
-      opt.textContent = `${humanize(last.error_class)} (unrecognized)`;
+      opt.textContent = `${humanize(last.error_class)}${t(' (unrecognized)')}`;
       $('last-error').appendChild(opt);
       $('last-error').value = last.error_class;
     }
@@ -314,17 +453,17 @@ function syncFormFromState() {
 function renderCases() {
   $('cases').innerHTML = cases
     .map((c, i) => {
-      const t = c.txn || {};
+      const txn = c.txn || {};
       const down = c.down || c.psps_down || [];
       const bits = [
-        money(num(t.amount)),
-        t.funding,
-        t.gateway,
-        `attempt ${t.attempt_number || 1}`,
-        `bias ${Number(c.cost_bias || 0).toFixed(2)}`,
+        money(num(txn.amount)),
+        txn.funding,
+        txn.gateway,
+        `${t('attempt ')}${txn.attempt_number || 1}`,
+        `${t('bias ')}${Number(c.cost_bias || 0).toFixed(2)}`,
       ];
-      if (down.length) bits.push(`${down.join(', ')} down`);
-      const title = CASE_TITLES[i] || String(c.why_interesting || '').split('. ')[0];
+      if (down.length) bits.push(`${down.join(', ')}${t(' down')}`);
+      const title = (lang === 'es' ? CASE_TITLES_ES[i] : CASE_TITLES[i]) || String(c.why_interesting || '').split('. ')[0];
       return `<button type="button" class="case" data-i="${i}" role="listitem" aria-pressed="false">
         <span class="case-n">${String(i + 1).padStart(2, '0')}</span>
         <span class="case-title">${esc(title)}</span>
@@ -382,11 +521,13 @@ async function runDecide() {
     const d = await postJSON('/api/decide', payload());
     if (seq !== decideSeq) return;
     showError($('decide-error'), null);
+    lastDecision = d;
     renderDecision(d);
   } catch (err) {
     if (seq !== decideSeq) return;
-    showError($('decide-error'), `Could not decide this transaction: ${err.message}`);
-    panel.innerHTML = '<p class="hint on-dark">No decision — see the message below.</p>';
+    lastDecision = null;
+    showError($('decide-error'), `${t('Could not decide this transaction: ')}${err.message}`);
+    panel.innerHTML = `<p class="hint on-dark">${esc(t('No decision — see the message below.'))}</p>`;
   } finally {
     if (seq === decideSeq) panel.setAttribute('aria-busy', 'false');
   }
@@ -411,10 +552,10 @@ function renderDecision(d) {
   const segLine = [si.gateway_group, si.funding, si.issuer_bucket, si.amount_band].filter(Boolean);
 
   const head = `<div class="route-head">
-      <p class="kicker">Route to</p>
+      <p class="kicker">${esc(t('Route to'))}</p>
       <p class="route-psp"><span>${esc(d.route_psp ?? '—')}</span></p>
       ${segLine.length ? `<p class="seg-line">${esc(segLine.join(' · '))}</p>` : ''}
-      ${d.static_default ? '<span class="flag">static default — insufficient data</span>' : ''}
+      ${d.static_default ? `<span class="flag">${esc(t('static default — insufficient data'))}</span>` : ''}
     </div>`;
 
   const winnerNet = num((eligible[d.route_psp] || {}).expected_net);
@@ -436,11 +577,11 @@ function renderDecision(d) {
         <div class="bar"><span style="width:${w.toFixed(1)}%"></span></div>
         <dl class="psp-stats">
           <div><dt>wilson</dt><dd>${pct(num(v.p_wilson))}</dd></div>
-          <div><dt>observed</dt><dd>${pct(num(v.p_hat))}</dd></div>
-          <div><dt>fee</dt><dd>${fee(num(v.fee_pct))}</dd></div>
-          <div><dt>level</dt><dd>${level(v.segment_used)}</dd></div>
+          <div><dt>${esc(t('observed'))}</dt><dd>${pct(num(v.p_hat))}</dd></div>
+          <div><dt>${esc(t('fee'))}</dt><dd>${fee(num(v.fee_pct))}</dd></div>
+          <div><dt>${esc(t('level'))}</dt><dd>${level(v.segment_used)}</dd></div>
           <div><dt>n</dt><dd>${count(num(v.n_support))}</dd></div>
-          ${v.insufficient_data ? '<div><dd class="thin">thin data</dd></div>' : ''}
+          ${v.insufficient_data ? `<div><dd class="thin">${esc(t('thin data'))}</dd></div>` : ''}
         </dl>
       </div>`;
     })
@@ -449,7 +590,7 @@ function renderDecision(d) {
   const out = excluded
     .map(
       (p) => `<div class="psp out">
-        <div class="psp-head"><span class="psp-id">${esc(p)}</span><span class="psp-net">excluded</span></div>
+        <div class="psp-head"><span class="psp-id">${esc(p)}</span><span class="psp-net">${esc(t('excluded'))}</span></div>
       </div>`
     )
     .join('');
@@ -457,26 +598,26 @@ function renderDecision(d) {
   const r = d.retry_policy || {};
   let retryLine;
   if (r.stop_reason) {
-    retryLine = `<span class="step">Stop.</span> ${esc(r.stop_reason)}`;
+    retryLine = `<span class="step">${esc(t('Stop.'))}</span> ${esc(r.stop_reason)}`;
   } else if (r.should_retry_on_fail) {
     const cands = (r.next_psp_candidates || []).map((p) => esc(p)).join('<span class="arrow">·</span>');
     retryLine =
-      `If it fails<span class="arrow">→</span><span class="step">retry</span>` +
+      `${esc(t('If it fails'))}<span class="arrow">→</span><span class="step">${esc(t('retry'))}</span>` +
       (cands ? `<span class="arrow">→</span>${cands}` : '') +
       (r.when ? `<span class="arrow">→</span>${esc(r.when)}` : '');
   } else {
-    retryLine = `<span class="step">No retry.</span>${r.when ? ' ' + esc(r.when) : ''}`;
+    retryLine = `<span class="step">${esc(t('No retry.'))}</span>${r.when ? ' ' + esc(r.when) : ''}`;
   }
 
   const retry = `<div class="retry">
-      <p class="kicker">Retry plan</p>
+      <p class="kicker">${esc(t('Retry plan'))}</p>
       <p class="retry-line">${retryLine}</p>
       ${r.note ? `<p class="retry-note">${esc(r.note)}</p>` : ''}
     </div>`;
 
   const wide = window.matchMedia('(min-width: 1000px)').matches;
   const trail = `<details class="trail" ${wide ? 'open' : ''}>
-      <summary>Reasoning trail</summary>
+      <summary>${esc(t('Reasoning trail'))}</summary>
       <ol>${(d.reasoning || []).map((l) => `<li>${esc(l)}</li>`).join('')}</ol>
     </details>`;
 
@@ -491,11 +632,13 @@ async function runSimulate() {
     const s = await postJSON('/api/simulate', payload());
     if (seq !== simulateSeq) return;
     showError($('simulate-error'), null);
+    lastSimulate = s;
     renderSimulate(s);
   } catch (err) {
     if (seq !== simulateSeq) return;
+    lastSimulate = null;
     $('whatif').hidden = true;
-    showError($('simulate-error'), `Could not run the what-if sweep: ${err.message}`);
+    showError($('simulate-error'), `${t('Could not run the what-if sweep: ')}${err.message}`);
   }
 }
 
@@ -513,7 +656,7 @@ function renderSimulate(s) {
   $('sweep').innerHTML = sweep
     .map((x) =>
       cell(
-        `bias ${Number(x.cost_bias).toFixed(2)}`,
+        `${t('bias ')}${Number(x.cost_bias).toFixed(2)}`,
         x.route_psp,
         money(num(x.expected_net)),
         x.route_psp !== baseRoute
@@ -524,7 +667,7 @@ function renderSimulate(s) {
   const downs = s.psps_down_scenarios || [];
   $('down-scenarios').innerHTML = downs
     .map((x) => {
-      const label = (x.psps_down || []).length ? `without ${x.psps_down.join(', ')}` : 'all up';
+      const label = (x.psps_down || []).length ? `${t('without ')}${x.psps_down.join(', ')}` : t('all up');
       return cell(label, x.route_psp, money(num(x.expected_net)), false);
     })
     .join('');
@@ -540,7 +683,7 @@ async function loadNormalizeSamples() {
   try {
     samples = await getJSON('/api/normalize/samples');
   } catch (err) {
-    showError($('normalize-error'), `Could not load the curated declines: ${err.message}`);
+    showError($('normalize-error'), `${t('Could not load the curated declines: ')}${err.message}`);
     return;
   }
   const byPsp = new Map();
@@ -581,7 +724,7 @@ function wireStaticHandlers() {
     } else {
       const s = samples[Number($('sample').value)];
       if (!s) {
-        showError($('normalize-error'), 'Pick a curated decline, or type a code or message of your own.');
+        showError($('normalize-error'), t('Pick a curated decline, or type a code or message of your own.'));
         return;
       }
       body = { psp: s.psp, raw_code: s.raw_code, raw_message: s.raw_message };
@@ -589,9 +732,12 @@ function wireStaticHandlers() {
     try {
       const res = await postJSON('/api/normalize', body);
       showError($('normalize-error'), null);
+      lastNormalizeResult = res;
+      lastNormalizeSent = body;
       renderNormalized(res, body);
     } catch (err) {
-      showError($('normalize-error'), `Could not normalize that decline: ${err.message}`);
+      lastNormalizeResult = null;
+      showError($('normalize-error'), `${t('Could not normalize that decline: ')}${err.message}`);
     }
   });
 }
@@ -601,29 +747,30 @@ function renderNormalized(res, sent) {
   const badgeClass =
     source === 'table' ? 'badge-table' : source === 'llm' ? 'badge-llm' : 'badge-fallback';
   const conf = num(res.confidence);
-  const badge = `<span class="badge ${badgeClass}">${esc(source)}${
+  const badge = `<span class="badge ${badgeClass}">${esc(t(source))}${
     source === 'llm' && res.provider ? ` · ${esc(res.provider)}` : ''
   }</span>`;
-  const confLine = conf !== null ? ` <span class="mono badge-conf">confidence ${conf.toFixed(2)}</span>` : '';
+  const confLine = conf !== null ? ` <span class="mono badge-conf">${esc(t('confidence '))}${conf.toFixed(2)}</span>` : '';
 
   const raw = [sent.psp, sent.raw_code, sent.raw_message].filter(Boolean).join(' · ');
-  const policy = RETRY_POLICY_COPY[res.error_class] || RETRY_POLICY_DEFAULT;
+  const policy = (lang === 'es' ? RETRY_POLICY_COPY_ES[res.error_class] : RETRY_POLICY_COPY[res.error_class])
+    || (lang === 'es' ? RETRY_POLICY_DEFAULT_ES : RETRY_POLICY_DEFAULT);
   const vocab = Array.isArray(res.error_class_options) ? res.error_class_options : [];
 
   $('norm-result').innerHTML = `
-    <p class="kicker">Normalized to</p>
+    <p class="kicker">${esc(t('Normalized to'))}</p>
     <p class="norm-class">${esc(res.error_class ?? '—')}</p>
     <p>${badge}${confLine}</p>
-    ${source === 'fallback' ? '<p class="norm-reason">below the 0.60 confidence threshold, or no model available — the retry machine gets the safe default</p>' : ''}
-    <p class="norm-raw">from ${esc(raw)}</p>
+    ${source === 'fallback' ? `<p class="norm-reason">${esc(t('below the 0.60 confidence threshold, or no model available — the retry machine gets the safe default'))}</p>` : ''}
+    <p class="norm-raw">${esc(t('from '))}${esc(raw)}</p>
     ${res.reasoning ? `<p class="norm-reason">${esc(res.reasoning)}</p>` : ''}
     ${
       vocab.length
-        ? `<p class="norm-raw" style="margin-top:var(--s3)">closed vocabulary: ${esc(vocab.join(' · '))}</p>`
+        ? `<p class="norm-raw" style="margin-top:var(--s3)">${esc(t('closed vocabulary: '))}${esc(vocab.join(' · '))}</p>`
         : ''
     }
     <div class="norm-policy">
-      <p class="kicker">What the retry machine does with it</p>
+      <p class="kicker">${esc(t('What the retry machine does with it'))}</p>
       <p class="norm-reason">${esc(policy)}</p>
     </div>`;
 }

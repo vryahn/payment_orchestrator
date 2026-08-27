@@ -98,6 +98,13 @@ code, .mono { font-family: var(--font-mono); font-size: .92em; font-variant-liga
 }
 .topbar nav a:hover { color: var(--color-terracotta); }
 
+.langs { display: flex; border: var(--hairline-strong); border-radius: 999px; overflow: hidden; }
+.langs button {
+  background: none; border: 0; font-family: var(--font-mono); font-size: .78rem;
+  letter-spacing: .06em; padding: 5px 12px; cursor: pointer; color: var(--color-muted);
+}
+.langs button.on { background: rgba(12, 42, 54, .08); color: var(--color-abyssal); }
+
 /* Keep the sticky bar to one row on a phone — two rows eat the viewport. */
 @media (max-width: 560px) {
   .topbar-inner { padding: var(--s2) var(--s3); gap: var(--s3); }

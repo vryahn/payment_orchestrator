@@ -23,16 +23,20 @@
 <script type="module" src="app.js"></script>
 </head>
 <body>
-<a class="skip" href="#route">Skip to the router</a>
+<a class="skip" href="#route" data-es="Ir al enrutador">Skip to the router</a>
 
 <header class="topbar">
   <div class="topbar-inner">
     <a class="wordmark" href="https://vryahn.com">BR.</a>
     <nav aria-label="Sections">
-      <a href="#route">Route</a>
-      <a href="#normalize">Normalize</a>
-      <a href="#how">How it works</a>
+      <a href="#route" data-es="Ruta">Route</a>
+      <a href="#normalize" data-es="Normalizar">Normalize</a>
+      <a href="#how" data-es="Cómo funciona">How it works</a>
       <a href="https://github.com/vryahn/payment_orchestrator">Repo</a>
+      <div class="langs" role="group" aria-label="Language">
+        <button id="lang-en" class="on" aria-pressed="true" type="button">EN</button>
+        <button id="lang-es" aria-pressed="false" type="button">ES</button>
+      </div>
     </nav>
   </div>
 </header>
@@ -41,26 +45,26 @@
 
   <!-- 1 — HERO -->
   <section class="hero">
-    <p class="kicker">Payment routing orchestrator</p>
-    <h1>Evidence in the hot path,<br><em>AI at the edges.</em></h1>
-    <p class="lede">Given a card authorization about to be sent, it decides which payment service provider should receive it — and if that attempt declines, what should happen next.</p>
+    <p class="kicker" data-es="Orquestador de enrutamiento de pagos">Payment routing orchestrator</p>
+    <h1 data-es-html="Evidencia en el camino crítico,<br><em>IA en los bordes.</em>">Evidence in the hot path,<br><em>AI at the edges.</em></h1>
+    <p class="lede" data-es="Dada una autorización de tarjeta a punto de enviarse, decide qué proveedor de servicios de pago debe recibirla — y si ese intento es rechazado, qué debe pasar después.">Given a card authorization about to be sent, it decides which payment service provider should receive it — and if that attempt declines, what should happen next.</p>
     <p class="cta-row">
-      <a class="btn btn-primary" href="#route">Try a scenario</a>
-      <a class="btn btn-ghost" href="https://vryahn.com/work/routing">Read the case study</a>
+      <a class="btn btn-primary" href="#route" data-es="Probar un escenario">Try a scenario</a>
+      <a class="btn btn-ghost" href="https://vryahn.com/work/routing" data-es="Leer el caso de estudio">Read the case study</a>
     </p>
     <ul class="stats" aria-label="Project facts">
-      <li><span class="stat-value" id="stat-lift">—</span><span class="stat-label">approval, out-of-sample</span></li>
-      <li><span class="stat-value">4 PSPs &middot; 3 channels</span><span class="stat-label">~300k synthetic attempts</span></li>
-      <li><span class="stat-value">retry by error class</span><span class="stat-label">not by a blind counter</span></li>
+      <li><span class="stat-value" id="stat-lift">—</span><span class="stat-label" data-es="de aprobación, fuera de muestra">approval, out-of-sample</span></li>
+      <li><span class="stat-value" data-es="4 PSP &middot; 3 canales">4 PSPs &middot; 3 channels</span><span class="stat-label" data-es="~300k intentos sintéticos">~300k synthetic attempts</span></li>
+      <li><span class="stat-value" data-es="reintento por clase de error">retry by error class</span><span class="stat-label" data-es="no por un contador ciego">not by a blind counter</span></li>
     </ul>
   </section>
 
   <!-- 2 — ROUTER -->
   <section id="route" class="section">
     <header class="section-head">
-      <p class="kicker">The instrument</p>
-      <h2>Route a transaction</h2>
-      <p class="section-lede">Pick a scenario and read the decision, or move the controls and watch it re-decide. Nothing here is a mock: every number comes from the same engine the CLI calls.</p>
+      <p class="kicker" data-es="El instrumento">The instrument</p>
+      <h2 data-es="Enrutar una transacción">Route a transaction</h2>
+      <p class="section-lede" data-es="Elige un escenario y lee la decisión, o mueve los controles y obsérvalo redecidir. Nada aquí es una simulación de mentira: cada número viene del mismo motor que llama el CLI.">Pick a scenario and read the decision, or move the controls and watch it re-decide. Nothing here is a mock: every number comes from the same engine the CLI calls.</p>
     </header>
 
     <div class="router">
@@ -68,86 +72,86 @@
       <!-- Scenario picker. On a phone the decision panel follows it directly;
            on a wide screen it shares the left column with the controls. -->
       <div class="cases-block controls">
-        <h3 class="panel-title">Scenarios</h3>
-        <p class="hint">Eight transactions chosen because each one sits on a decision boundary.</p>
+        <h3 class="panel-title" data-es="Escenarios">Scenarios</h3>
+        <p class="hint" data-es="Ocho transacciones elegidas porque cada una está en un límite de decisión.">Eight transactions chosen because each one sits on a decision boundary.</p>
         <div id="cases" class="cases" role="list">
-          <p class="hint">Loading scenarios…</p>
+          <p class="hint" data-es="Cargando escenarios…">Loading scenarios…</p>
         </div>
       </div>
 
       <div class="adjust-block controls">
         <form id="adjust" class="adjust" novalidate>
-          <h3 class="panel-title">Adjust</h3>
+          <h3 class="panel-title" data-es="Ajustar">Adjust</h3>
 
           <div class="field">
-            <label for="amount">Amount</label>
+            <label for="amount" data-es="Monto">Amount</label>
             <input type="number" id="amount" name="amount" min="1" step="0.01" value="250" inputmode="decimal">
           </div>
 
           <div class="field">
-            <label for="bin6">Card BIN</label>
+            <label for="bin6" data-es="BIN de tarjeta">Card BIN</label>
             <select id="bin6" name="bin6"></select>
-            <p class="helper">The first six digits identify the issuing bank.</p>
+            <p class="helper" data-es="Los primeros seis dígitos identifican al banco emisor.">The first six digits identify the issuing bank.</p>
           </div>
 
           <div class="field-row">
             <div class="field">
-              <label for="funding">Funding</label>
+              <label for="funding" data-es="Financiamiento">Funding</label>
               <select id="funding" name="funding"></select>
             </div>
             <div class="field">
-              <label for="gateway">Channel</label>
+              <label for="gateway" data-es="Canal">Channel</label>
               <select id="gateway" name="gateway"></select>
             </div>
           </div>
-          <p class="helper" id="gateway-helper">Checkout and POS are user-present: someone can complete an authentication step. Recurring is off-session: nobody is there.</p>
+          <p class="helper" id="gateway-helper" data-es="Checkout y POS son con usuario presente: alguien puede completar un paso de autenticación. Recurring es fuera de sesión: no hay nadie.">Checkout and POS are user-present: someone can complete an authentication step. Recurring is off-session: nobody is there.</p>
 
           <div class="field-row">
             <div class="field">
-              <label for="attempt">Attempt number</label>
+              <label for="attempt" data-es="Número de intento">Attempt number</label>
               <input type="number" id="attempt" name="attempt" min="1" max="20" step="1" value="1">
             </div>
             <div class="field" id="last-error-field" hidden>
-              <label for="last-error">Last decline</label>
+              <label for="last-error" data-es="Último rechazo">Last decline</label>
               <select id="last-error" name="last-error"></select>
             </div>
           </div>
           <div class="field" id="last-psp-field" hidden>
-            <label for="last-psp">Declined by</label>
+            <label for="last-psp" data-es="Rechazado por">Declined by</label>
             <select id="last-psp" name="last-psp"></select>
           </div>
           <p class="helper mono" id="earlier-history" hidden></p>
 
           <div class="field">
-            <label for="cost-bias">Fee tolerance <span class="mono value" id="cost-bias-value">0.00</span></label>
+            <label for="cost-bias"><span data-es="Tolerancia de comisión">Fee tolerance</span> <span class="mono value" id="cost-bias-value">0.00</span></label>
             <input type="range" id="cost-bias" name="cost-bias" min="0" max="1" step="0.05" value="0"
                    aria-describedby="cost-bias-helper">
-            <div class="range-ends mono"><span>Maximize approval</span><span>Minimize fees</span></div>
-            <p class="helper" id="cost-bias-helper">Percentage points of approval you will trade for a cheaper provider: 0 takes the best approver, 1 takes the cheapest one within 10 pp of it.</p>
+            <div class="range-ends mono"><span data-es="Maximizar aprobación">Maximize approval</span><span data-es="Minimizar comisiones">Minimize fees</span></div>
+            <p class="helper" id="cost-bias-helper" data-es="Puntos porcentuales de aprobación que estás dispuesto a ceder por un proveedor más barato: 0 toma al que más aprueba, 1 toma al más barato dentro de 10 pp de ese.">Percentage points of approval you will trade for a cheaper provider: 0 takes the best approver, 1 takes the cheapest one within 10 pp of it.</p>
           </div>
 
           <fieldset class="field">
-            <legend>Providers down</legend>
+            <legend data-es="Proveedores caídos">Providers down</legend>
             <div id="psps-down" class="checks"></div>
-            <p class="helper">Marking one down rebuilds the candidate pool and re-scores the survivors.</p>
+            <p class="helper" data-es="Marcar uno como caído reconstruye el grupo de candidatos y repuntúa a los sobrevivientes.">Marking one down rebuilds the candidate pool and re-scores the survivors.</p>
           </fieldset>
         </form>
       </div>
 
       <div class="decision-wrap">
         <div class="decision" id="decision" aria-live="polite" aria-busy="true">
-          <p class="hint on-dark">Deciding…</p>
+          <p class="hint on-dark" data-es="Decidiendo…">Deciding…</p>
         </div>
         <p class="err" id="decide-error" role="alert" hidden></p>
 
         <div class="whatif" id="whatif" hidden>
-          <h3 class="panel-title">What if</h3>
+          <h3 class="panel-title" data-es="Qué pasaría si">What if</h3>
           <div class="whatif-block">
-            <p class="kicker">Fee tolerance sweep</p>
+            <p class="kicker" data-es="Barrido de tolerancia de comisión">Fee tolerance sweep</p>
             <div class="sweep" id="sweep"></div>
           </div>
           <div class="whatif-block">
-            <p class="kicker">If a provider goes down</p>
+            <p class="kicker" data-es="Si un proveedor cae">If a provider goes down</p>
             <div class="sweep" id="down-scenarios"></div>
           </div>
         </div>
@@ -160,41 +164,41 @@
   <!-- 3 — NORMALIZE -->
   <section id="normalize" class="section">
     <header class="section-head">
-      <p class="kicker">AI at the edge</p>
-      <h2>Normalize a decline</h2>
-      <p class="section-lede">The model is not in the router. This is the only place it runs — and this is what happens when it is unsure.</p>
-      <p class="section-lede">Providers speak different dialects: an ISO 8583 numeric code, a Stripe-style <code>decline_code</code>, an Adyen-style refusal reason, free text. The retry machine needs one vocabulary. A deterministic table answers first; a model is called only for the long tail; an unresolved code falls back to the generic policy and says so.</p>
+      <p class="kicker" data-es="IA en el borde">AI at the edge</p>
+      <h2 data-es="Normalizar un rechazo">Normalize a decline</h2>
+      <p class="section-lede" data-es="El modelo no está en el enrutador. Este es el único lugar donde corre — y esto es lo que pasa cuando no está seguro.">The model is not in the router. This is the only place it runs — and this is what happens when it is unsure.</p>
+      <p class="section-lede" data-es-html='Los proveedores hablan dialectos distintos: un código numérico ISO 8583, un <code>decline_code</code> al estilo Stripe, una razón de rechazo al estilo Adyen, texto libre. La máquina de reintentos necesita un solo vocabulario. Una tabla determinista responde primero; un modelo se llama solo para la cola larga; un código sin resolver cae a la política genérica y lo dice explícitamente.'>Providers speak different dialects: an ISO 8583 numeric code, a Stripe-style <code>decline_code</code>, an Adyen-style refusal reason, free text. The retry machine needs one vocabulary. A deterministic table answers first; a model is called only for the long tail; an unresolved code falls back to the generic policy and says so.</p>
     </header>
 
     <div class="normalizer">
       <form id="normalize-form" class="controls">
         <div class="field">
-          <label for="sample">Curated decline</label>
+          <label for="sample" data-es="Rechazo seleccionado">Curated decline</label>
           <select id="sample" name="sample"></select>
         </div>
 
         <details class="own">
-          <summary>Or type your own</summary>
+          <summary data-es="O escribe el tuyo">Or type your own</summary>
           <div class="field">
-            <label for="own-psp">Provider</label>
+            <label for="own-psp" data-es="Proveedor">Provider</label>
             <select id="own-psp" name="own-psp"></select>
           </div>
           <div class="field">
-            <label for="own-code">Raw code</label>
+            <label for="own-code" data-es="Código crudo">Raw code</label>
             <input type="text" id="own-code" name="own-code" maxlength="40" placeholder="05" autocomplete="off">
           </div>
           <div class="field">
-            <label for="own-message">Raw message</label>
+            <label for="own-message" data-es="Mensaje crudo">Raw message</label>
             <input type="text" id="own-message" name="own-message" maxlength="120" placeholder="Do not honor" autocomplete="off">
           </div>
         </details>
 
-        <button type="submit" class="btn btn-primary">Normalize</button>
+        <button type="submit" class="btn btn-primary" data-es="Normalizar">Normalize</button>
         <p class="err" id="normalize-error" role="alert" hidden></p>
       </form>
 
       <div class="norm-result" id="norm-result" aria-live="polite">
-        <p class="hint">Pick a decline and normalize it.</p>
+        <p class="hint" data-es="Elige un rechazo y normalízalo.">Pick a decline and normalize it.</p>
       </div>
     </div>
   </section>
@@ -202,50 +206,50 @@
   <!-- 4 — HOW IT WORKS -->
   <section id="how" class="section">
     <header class="section-head">
-      <p class="kicker">How it works</p>
-      <h2>Three parts, one boundary</h2>
-      <p class="section-lede">The engine is pure. It loads pre-built tables, decides in microseconds, and never touches raw data — which is what makes the decision testable offline and auditable after the fact.</p>
+      <p class="kicker" data-es="Cómo funciona">How it works</p>
+      <h2 data-es="Tres partes, un límite">Three parts, one boundary</h2>
+      <p class="section-lede" data-es="El motor es puro. Carga tablas prearmadas, decide en microsegundos, y nunca toca datos crudos — eso es lo que hace la decisión probable offline y auditable después del hecho.">The engine is pure. It loads pre-built tables, decides in microseconds, and never touches raw data — which is what makes the decision testable offline and auditable after the fact.</p>
     </header>
 
     <figure class="diagram">
       <svg viewBox="0 0 540 168" role="img" aria-labelledby="diagram-title diagram-desc">
-        <title id="diagram-title">Pipeline diagram</title>
-        <desc id="diagram-desc">Offline, raw attempts are built into routing tables scored with a Wilson lower bound over four segment levels. Online, a transaction plus those tables enter the decide function, which returns a route, a retry plan and a reasoning trail.</desc>
+        <title id="diagram-title" data-es="Diagrama del pipeline">Pipeline diagram</title>
+        <desc id="diagram-desc" data-es="Offline, los intentos crudos se construyen en tablas de enrutamiento puntuadas con un límite inferior de Wilson sobre cuatro niveles de segmento. Online, una transacción más esas tablas entran a la función decide, que devuelve una ruta, un plan de reintento y un rastro de razonamiento.">Offline, raw attempts are built into routing tables scored with a Wilson lower bound over four segment levels. Online, a transaction plus those tables enter the decide function, which returns a route, a retry plan and a reasoning trail.</desc>
         <defs>
           <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
             <path d="M0 0 L8 4 L0 8 z" fill="currentColor"></path>
           </marker>
         </defs>
-        <g class="lane-label"><text x="8" y="12">Offline · batch</text></g>
+        <g class="lane-label"><text x="8" y="12" data-es="Offline · lote">Offline · batch</text></g>
         <g class="dbox">
           <rect x="8" y="20" width="120" height="42" rx="2"></rect>
-          <text class="dt" x="68" y="38">attempts</text>
-          <text class="ds" x="68" y="52">1 row = 1 try</text>
+          <text class="dt" x="68" y="38" data-es="intentos">attempts</text>
+          <text class="ds" x="68" y="52" data-es="1 fila = 1 intento">1 row = 1 try</text>
         </g>
         <line x1="130" y1="41" x2="148" y2="41" marker-end="url(#arrow)"></line>
         <g class="dbox">
           <rect x="152" y="20" width="160" height="42" rx="2"></rect>
-          <text class="dt" x="232" y="38">routing tables</text>
-          <text class="ds" x="232" y="52">Wilson LB · 4 levels</text>
+          <text class="dt" x="232" y="38" data-es="tablas de enrutamiento">routing tables</text>
+          <text class="ds" x="232" y="52" data-es="LB Wilson · 4 niveles">Wilson LB · 4 levels</text>
         </g>
         <line x1="232" y1="64" x2="232" y2="98" marker-end="url(#arrow)"></line>
-        <g class="lane-label"><text x="8" y="96">Online · pure engine</text></g>
+        <g class="lane-label"><text x="8" y="96" data-es="Online · motor puro">Online · pure engine</text></g>
         <g class="dbox">
           <rect x="8" y="106" width="120" height="42" rx="2"></rect>
-          <text class="dt" x="68" y="124">transaction</text>
-          <text class="ds" x="68" y="138">amount · bin · channel</text>
+          <text class="dt" x="68" y="124" data-es="transacción">transaction</text>
+          <text class="ds" x="68" y="138" data-es="monto · bin · canal">amount · bin · channel</text>
         </g>
         <line x1="130" y1="127" x2="168" y2="127" marker-end="url(#arrow)"></line>
         <g class="dbox accent">
           <rect x="172" y="106" width="120" height="42" rx="2"></rect>
           <text class="dt" x="232" y="124">decide()</text>
-          <text class="ds" x="232" y="138">segment · score · pick</text>
+          <text class="ds" x="232" y="138" data-es="segmento · puntaje · elección">segment · score · pick</text>
         </g>
         <line x1="294" y1="127" x2="312" y2="127" marker-end="url(#arrow)"></line>
         <g class="dbox">
           <rect x="316" y="106" width="216" height="42" rx="2"></rect>
-          <text class="dt" x="424" y="124">route + retry plan + why</text>
-          <text class="ds" x="424" y="138">every decision carries its reasoning</text>
+          <text class="dt" x="424" y="124" data-es="ruta + plan de reintento + por qué">route + retry plan + why</text>
+          <text class="ds" x="424" y="138" data-es="cada decisión lleva su razonamiento">every decision carries its reasoning</text>
         </g>
       </svg>
     </figure>
@@ -253,21 +257,21 @@
     <div class="cols">
       <article>
         <p class="kicker">Offline</p>
-        <h3>Attempts become evidence</h3>
-        <p>Raw events are reconstructed into one row per authorization attempt, then aggregated into approval tables over a four-level segment hierarchy: channel × funding × issuer × amount band at the finest, channel alone at the coarsest. The channel is never dropped — user-present and off-session are different worlds.</p>
-        <p>Every cell is scored with a Wilson 95% lower bound, so a segment with three approvals out of three is not a 100% segment. Thin evidence is penalized instead of trusted, without needing a separate confidence rule bolted on.</p>
+        <h3 data-es="Los intentos se vuelven evidencia">Attempts become evidence</h3>
+        <p data-es="Los eventos crudos se reconstruyen en una fila por intento de autorización, luego se agregan en tablas de aprobación sobre una jerarquía de segmentos de cuatro niveles: canal × financiamiento × emisor × banda de monto en el nivel más fino, canal solo en el más grueso. El canal nunca se descarta — usuario presente y fuera de sesión son mundos distintos.">Raw events are reconstructed into one row per authorization attempt, then aggregated into approval tables over a four-level segment hierarchy: channel × funding × issuer × amount band at the finest, channel alone at the coarsest. The channel is never dropped — user-present and off-session are different worlds.</p>
+        <p data-es="Cada celda se puntúa con un límite inferior de Wilson al 95%, así que un segmento con tres aprobaciones de tres no es un segmento al 100%. La evidencia escasa se penaliza en vez de confiarse ciegamente, sin necesitar una regla de confianza aparte.">Every cell is scored with a Wilson 95% lower bound, so a segment with three approvals out of three is not a 100% segment. Thin evidence is penalized instead of trusted, without needing a separate confidence rule bolted on.</p>
       </article>
       <article>
         <p class="kicker">Online</p>
-        <h3>Decide, then plan the retry</h3>
-        <p>Per provider, the engine walks the hierarchy from finest to coarsest until it finds a segment with enough support, scores <span class="mono">expected_net = wilson × amount × (1 − fee)</span>, and picks. The fee tolerance knob sets how many percentage points of approval an operator will trade for a cheaper provider; providers marked down are excluded before scoring.</p>
-        <p>Routing and retry are separate decisions. The retry state machine keys on the last decline's class and on whether a user is in the loop, so a funding problem waits on the same provider while a step-up authentication moves channels.</p>
+        <h3 data-es="Decidir, luego planear el reintento">Decide, then plan the retry</h3>
+        <p data-es-html='Por proveedor, el motor recorre la jerarquía de lo más fino a lo más grueso hasta encontrar un segmento con suficiente soporte, puntúa <span class="mono">expected_net = wilson × monto × (1 − comisión)</span>, y elige. La perilla de tolerancia de comisión define cuántos puntos porcentuales de aprobación un operador está dispuesto a ceder por un proveedor más barato; los proveedores marcados como caídos se excluyen antes de puntuar.'>Per provider, the engine walks the hierarchy from finest to coarsest until it finds a segment with enough support, scores <span class="mono">expected_net = wilson × amount × (1 − fee)</span>, and picks. The fee tolerance knob sets how many percentage points of approval an operator will trade for a cheaper provider; providers marked down are excluded before scoring.</p>
+        <p data-es="Enrutamiento y reintento son decisiones separadas. La máquina de estados de reintento se basa en la clase del último rechazo y en si hay un usuario en el ciclo, así que un problema de fondos espera en el mismo proveedor mientras una autenticación reforzada cambia de canal.">Routing and retry are separate decisions. The retry state machine keys on the last decline's class and on whether a user is in the loop, so a funding problem waits on the same provider while a step-up authentication moves channels.</p>
       </article>
       <article>
         <p class="kicker">Edges</p>
-        <h3>Where a model belongs</h3>
-        <p>A model deciding where to send $450 does not pass latency or audit. A model translating <span class="mono">"05 Do not honor"</span> into a class the state machine already understands does — and that translation is measurable, so it is covered by an eval with a committed baseline and a hallucination gate.</p>
-        <p>An MCP server exposes the same engine as tools, so an operations analyst can ask an agent why a charge went where it went, and what changes if a provider drops.</p>
+        <h3 data-es="Dónde pertenece un modelo">Where a model belongs</h3>
+        <p data-es-html='Un modelo decidiendo a dónde enviar $450 no pasa latencia ni auditoría. Un modelo traduciendo <span class="mono">"05 Do not honor"</span> a una clase que la máquina de estados ya entiende, sí — y esa traducción es medible, así que está cubierta por un eval con una línea base fija y un filtro de alucinaciones.'>A model deciding where to send $450 does not pass latency or audit. A model translating <span class="mono">"05 Do not honor"</span> into a class the state machine already understands does — and that translation is measurable, so it is covered by an eval with a committed baseline and a hallucination gate.</p>
+        <p data-es="Un servidor MCP expone el mismo motor como herramientas, así que un analista de operaciones puede preguntarle a un agente por qué un cargo fue a donde fue, y qué cambia si un proveedor cae.">An MCP server exposes the same engine as tools, so an operations analyst can ask an agent why a charge went where it went, and what changes if a provider drops.</p>
         <p class="links">
           <a href="https://github.com/vryahn/payment_orchestrator/blob/main/MCP.md">MCP.md</a>
           <a href="https://github.com/vryahn/payment_orchestrator/tree/main/evals">evals</a>
@@ -279,15 +283,15 @@
 </main>
 
 <footer class="footer">
-  <p class="footer-lede">Built by Bryan Rodríguez Abarca — Technical Product Manager, building the AI layer on top of deterministic foundations.</p>
+  <p class="footer-lede" data-es="Construido por Bryan Rodríguez Abarca — Product Manager Técnico, construyendo la capa de IA sobre cimientos deterministas.">Built by Bryan Rodríguez Abarca — Technical Product Manager, building the AI layer on top of deterministic foundations.</p>
   <nav class="footer-links" aria-label="Elsewhere">
-    <a href="https://github.com/vryahn/payment_orchestrator">Repository</a>
-    <a href="https://vryahn.com/work/routing">Case study</a>
+    <a href="https://github.com/vryahn/payment_orchestrator" data-es="Repositorio">Repository</a>
+    <a href="https://vryahn.com/work/routing" data-es="Caso de estudio">Case study</a>
     <a href="https://vryahn.com/cv">CV</a>
     <a href="https://www.linkedin.com/in/vryahn/">LinkedIn</a>
     <a href="https://vryahn.com">vryahn.com</a>
   </nav>
-  <p class="footer-note">Synthetic data. Started from a technical exercise, generalized as a personal project. Built and shipped inside Claude Code.</p>
+  <p class="footer-note" data-es="Datos sintéticos. Empezó como un ejercicio técnico, se generalizó como proyecto personal. Construido y lanzado dentro de Claude Code.">Synthetic data. Started from a technical exercise, generalized as a personal project. Built and shipped inside Claude Code.</p>
 </footer>
 
 </body>
