@@ -49,6 +49,27 @@ function onLangChange() {
   if (lastDecision) renderDecision(lastDecision);
   if (lastSimulate) renderSimulate(lastSimulate);
   if (lastNormalizeResult) renderNormalized(lastNormalizeResult, lastNormalizeSent);
+  fitDiagramText();
+}
+
+// The pipeline diagram's box widths are fixed in the SVG, but translated labels
+// aren't the same length as the English original — compress with textLength
+// only the ones that actually overflow their box, in either language.
+function fitDiagramText() {
+  document.querySelectorAll('.diagram .dbox').forEach((g) => {
+    const rect = g.querySelector('rect');
+    if (!rect) return;
+    const budget = rect.width.baseVal.value - 12;
+    g.querySelectorAll('text').forEach((t) => {
+      t.removeAttribute('textLength');
+      t.removeAttribute('lengthAdjust');
+      const width = t.getBBox().width;
+      if (width > budget) {
+        t.setAttribute('textLength', String(budget));
+        t.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+      }
+    });
+  });
 }
 
 /* ---------------- helpers ---------------- */
