@@ -12,11 +12,21 @@ numbers it can show its work for.
 """
 import ops
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 
 mcp = FastMCP("payment-routing-orchestrator")
 
 
-@mcp.tool()
+def _hints(open_world: bool = False) -> ToolAnnotations:
+    """Every tool here is a pure read over ops.py -- nothing mutates state, so the
+    three closed hints are the same for all six. Only normalize_decline reaches
+    outside the process (the LLM fallback), so open_world is the one that varies.
+    """
+    return ToolAnnotations(readOnlyHint=True, destructiveHint=False,
+                           idempotentHint=True, openWorldHint=open_world)
+
+
+@mcp.tool(annotations=_hints())
 def route_transaction(amount: float, gateway: str, bin6: str = None, funding: str = None,
                       attempt_number: int = 1, cost_bias: float = 0.0,
                       psps_down: list[str] = None,
@@ -40,7 +50,7 @@ def route_transaction(amount: float, gateway: str, bin6: str = None, funding: st
                                  psps_down=psps_down, error_history=error_history)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_hints())
 def explain_decision(amount: float, gateway: str, bin6: str = None, funding: str = None,
                      attempt_number: int = 1, cost_bias: float = 0.0,
                      psps_down: list[str] = None,
@@ -57,7 +67,7 @@ def explain_decision(amount: float, gateway: str, bin6: str = None, funding: str
                                 psps_down=psps_down, error_history=error_history)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_hints())
 def simulate(amount: float, gateway: str, bin6: str = None, funding: str = None,
              attempt_number: int = 1, cost_bias: float = 0.0,
              error_history: list[dict] = None) -> dict:
@@ -73,7 +83,7 @@ def simulate(amount: float, gateway: str, bin6: str = None, funding: str = None,
                         error_history=error_history)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_hints())
 def segment_evidence(amount: float, gateway: str, bin6: str = None,
                      funding: str = None) -> dict:
     """The raw evidence behind a route: per PSP, the hierarchy level used, the segment
@@ -86,7 +96,7 @@ def segment_evidence(amount: float, gateway: str, bin6: str = None,
     return ops.segment_evidence(amount=amount, bin6=bin6, funding=funding, gateway=gateway)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_hints(open_world=True))
 def normalize_decline(psp: str, raw_code: str = None, raw_message: str = None) -> dict:
     """Translate one PSP's raw decline (ISO 8583 code, Stripe-like decline_code,
     Adyen-like refusalReason, or free bank text) into the engine's error_class enum.
@@ -99,7 +109,7 @@ def normalize_decline(psp: str, raw_code: str = None, raw_message: str = None) -
     return ops.normalize_decline(psp=psp, raw_code=raw_code, raw_message=raw_message)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_hints())
 def backtest_summary(live: bool = False) -> dict:
     """The out-of-sample backtest headline: expected approval lift vs the historical
     routing, per cost_bias, with its caveats.
