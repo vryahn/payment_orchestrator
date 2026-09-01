@@ -36,7 +36,7 @@ d.text((80, 430),
        "Deterministic PSP routing on empirical approval evidence.",
        font=lede, fill=ON_DARK)
 d.text((80, 472),
-       "The model is not in the router.",
+       "+5.89 pp expected approval on 84,011 replayed authorizations.",
        font=lede, fill=ON_DARK)
 
 foot = ImageFont.truetype(INTER_M, 26)
