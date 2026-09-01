@@ -33,8 +33,10 @@ function initLangToggle() {
   window.setOrchLang = setLang;
   btnEN.addEventListener('click', () => setLang('en'));
   btnES.addEventListener('click', () => setLang('es'));
-  let saved = 'en';
-  try { saved = localStorage.getItem('orch-lang') || 'en'; } catch {}
+  // Inglés primero; español solo si el visitante lo pide y no eligió antes.
+  let saved = null;
+  try { saved = localStorage.getItem('orch-lang'); } catch {}
+  if (!saved) saved = (navigator.language || '').toLowerCase().startsWith('es') ? 'es' : 'en';
   setLang(saved);
 }
 
